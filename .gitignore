@@ -1,0 +1,175 @@
+# IntelliJ
+*.iml
+.idea/libraries
+.idea/modules.xml
+.idea/**/workspace.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/.idea/render.experimental.xml
+.idea/assetWizardSettings.xml
+.idea/caches
+.idea/**/tasks.xml
+.idea/gradle.xml
+.idea/vcs.xml
+.idea/.name
+.idea/compiler.xml
+.idea/scopes/scope_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+*.ipr
+.idea/jarRepositories.xml
+.idea/artifacts
+.idea/*.iml
+.idea/modules
+
+# Generated files
+.idea/**/contentModel.xml
+
+# Sensitive or high-churn files
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# CMake
+cmake-build-*/
+
+# Mongo Explorer plugin
+.idea/**/mongoSettings.xml
+
+# File-based project format
+*.iws
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Cursive Clojure plugin
+.idea/replstate.xml
+
+# ignore Editor files
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Editor-based Rest Client
+.idea/httpRequests
+
+### Intellij Patch ###
+# Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
+# Sonarlint plugin
+.idea/sonarlint
+
+# ignore all files starting with . or ~
+#.*
+~*
+
+# ignore graphql schemas
+schema.json
+schema.graphql
+
+# ignore log files and databases
+*.log
+*.sql
+*.sqlite
+
+# ignore compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# ignore packaged files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.war
+*.nar
+*.ear
+*.tar.gz
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
+
+# Generated files
+bin/
+gen/
+out/
+
+# Google Services (e.g. APIs or Firebase)
+#google-services.json
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Signing files
+.signing/
+
+# Keystore files
+# Uncomment the following lines if you do not want to check your keystore files in.
+*.jks
+*.keystore
+
+# Built application files
+/build
+/buildSrc/build/
+
+# Gradle generated files
+.gradle
+
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+wireframe/
+
+# Api key
+api_keys.xml
+
+# -------------------------
+# BEGIN Whitelisted Files
+# -------------------------
+
+# track these files, if they exist
+!.gitignore
+!.editorconfig
+!.phpcs.xml.dist
+!gradle/wrapper/gradle-wrapper.jar
