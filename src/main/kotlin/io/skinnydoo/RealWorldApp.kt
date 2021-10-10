@@ -23,6 +23,9 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused")
 fun Application.module() {
 
+  install(DefaultHeaders) {
+    header("X-Engine", "Ktor") // will send this header with each response
+  }
   install(Koin) {
     SLF4JLogger(level = Level.DEBUG)
   }
@@ -37,9 +40,6 @@ fun Application.module() {
   install(CallLogging) {
     level = org.slf4j.event.Level.INFO
     filter { call -> call.request.path().startsWith("/") }
-  }
-  install(DefaultHeaders) {
-    header("X-Engine", "Ktor") // will send this header with each response
   }
   install(Locations)
 }
