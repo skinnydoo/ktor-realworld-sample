@@ -9,4 +9,5 @@ object Versions {
   const val koin = "3.1.2"
   const val spotless = "5.16.0"
   const val ktlint = "0.42.1"
+  const val arrow = "1.0.0"
 }

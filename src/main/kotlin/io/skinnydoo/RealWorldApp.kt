@@ -1,20 +1,28 @@
 package io.skinnydoo
 
 import io.ktor.application.Application
-import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.authentication
+import io.ktor.auth.jwt.jwt
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
-import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
 import io.ktor.request.path
-import io.ktor.response.respondText
 import io.ktor.serialization.json
-import org.koin.core.logger.Level
+import io.skinnydoo.common.DatabaseFactory
+import io.skinnydoo.common.JwtService
+import io.skinnydoo.common.config.configure
+import io.skinnydoo.common.dbConfig
+import io.skinnydoo.common.jwtConfig
+import io.skinnydoo.users.registerUserRoutes
+import io.skinnydoo.users.usecases.GetUserWithId
+import org.koin.core.parameter.parametersOf
 import org.koin.ktor.ext.Koin
-import org.koin.logger.SLF4JLogger
+import org.koin.ktor.ext.inject
+import org.slf4j.event.Level
+import java.util.UUID
 
 const val API_V1 = "/v1"
 
@@ -23,23 +31,35 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused")
 fun Application.module() {
 
-  install(DefaultHeaders) {
-    header("X-Engine", "Ktor") // will send this header with each response
-  }
-  install(Koin) {
-    SLF4JLogger(level = Level.DEBUG)
-  }
-  install(StatusPages) {
-    exception<Throwable> { e ->
-      call.respondText(e.localizedMessage, status = HttpStatusCode.InternalServerError)
-    }
-  }
-  install(ContentNegotiation) {
-    json()
-  }
+  install(DefaultHeaders) { header("X-Engine", "Ktor") }
   install(CallLogging) {
-    level = org.slf4j.event.Level.INFO
+    level = Level.DEBUG
     filter { call -> call.request.path().startsWith("/") }
   }
+  install(ContentNegotiation) { json() }
+  install(StatusPages) { configure() }
   install(Locations)
+
+  install(Koin) { configure() }
+  val dbFactory by inject<DatabaseFactory> { parametersOf(environment.dbConfig("database")) }
+  dbFactory.init()
+
+  val jwtService by inject<JwtService> { parametersOf(environment.jwtConfig("jwt")) }
+  val getUserWithId by inject<GetUserWithId>()
+  authentication {
+    jwt(name = "auth-jwt") {
+      realm = jwtService.realm
+      authSchemes("Token")
+      verifier(jwtService.verifier)
+      validate { credential ->
+        val claim = credential.payload.getClaim("id").asString()
+        claim?.let { id ->
+          getUserWithId(GetUserWithId.Params(UUID.fromString(id)))
+            .fold(onSuccess = { it.orNull() }, onFailure = { null })
+        }
+      }
+    }
+  }
+
+  registerUserRoutes()
 }

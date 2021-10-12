@@ -18,6 +18,10 @@ repositories {
 }
 
 dependencies {
+  implementation(platform(Deps.Arrow.stack))
+
+  implementation(Deps.Arrow.core)
+
   implementation(Deps.Koin.koin)
   implementation(Deps.Koin.koinLogger)
 
@@ -46,6 +50,8 @@ dependencies {
   implementation(Deps.mysqlConnector)
 
   implementation(Deps.logback)
+
+  implementation("commons-validator:commons-validator:1.7")
 
   testImplementation(Deps.Testing.serverTest)
   testImplementation(Deps.Testing.ktTest)
