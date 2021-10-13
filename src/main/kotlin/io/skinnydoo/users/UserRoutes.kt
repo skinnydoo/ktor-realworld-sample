@@ -3,13 +3,19 @@
 package io.skinnydoo.users
 
 import arrow.core.Either
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import io.ktor.application.Application
 import io.ktor.application.application
 import io.ktor.application.call
 import io.ktor.application.log
+import io.ktor.auth.authenticate
+import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
+import io.ktor.locations.get
 import io.ktor.locations.post
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -39,6 +45,11 @@ class UserCreateRoute
 @Location("/user")
 class UserRoute
 
+/**
+ * Register a new user.
+ *
+ * POST /v1/users
+ */
 fun Route.createUser() {
   val registerUser by inject<RegisterUser>()
   val jwtService by inject<JwtService> { parametersOf(application.environment.jwtConfig("jwt")) }
@@ -73,6 +84,11 @@ fun Route.createUser() {
   }
 }
 
+/**
+ * Login for existing user.
+ *
+ * POST v1/users/login
+ */
 fun Route.loginUser() {
   val loginWithEmail by inject<LoginUser>()
   val jwtService by inject<JwtService> { parametersOf(application.environment.jwtConfig("jwt")) }
@@ -110,11 +126,31 @@ fun Route.loginUser() {
   }
 }
 
+/**
+ * Gets the currently logged-in user.
+ *
+ * GET /v1/user
+ */
+fun Route.getCurrentUser() {
+  authenticate("auth-jwt") {
+    get<UserRoute> {
+      when (val maybePrincipal = Option.fromNullable(call.principal<User>())) {
+        is Some -> call.respond(UserResponse(LoggedInUser.fromUser(maybePrincipal.value, "")))
+        None -> call.respond(
+          HttpStatusCode.Unauthorized,
+          ErrorEnvelope(mapOf("body" to listOf("Unknown user")))
+        )
+      }
+    }
+  }
+}
+
 fun Application.registerUserRoutes() {
   routing {
     route(API_V1) {
       createUser()
       loginUser()
+      getCurrentUser()
     }
   }
 }
