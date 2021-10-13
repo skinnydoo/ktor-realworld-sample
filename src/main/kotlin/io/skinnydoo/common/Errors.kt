@@ -4,7 +4,7 @@ typealias UserNotFound = NotFoundError.UserNotFound
 typealias UserExists = AlreadyExistsError.UserAlreadyExist
 
 sealed class LoginError {
-  object UserNotFound : LoginError()
+  object EmailUnknown : LoginError()
   object PasswordInvalid : LoginError()
 }
 

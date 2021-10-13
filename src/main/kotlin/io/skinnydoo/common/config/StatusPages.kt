@@ -8,6 +8,6 @@ import io.skinnydoo.common.ErrorEnvelope
 
 fun StatusPages.Configuration.configure() {
   exception<Throwable> { e ->
-    call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.toString()))))
+    call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.localizedMessage))))
   }
 }

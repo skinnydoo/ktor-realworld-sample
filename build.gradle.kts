@@ -76,6 +76,7 @@ spotless {
 
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions {
+    languageVersion = "1.6"
     freeCompilerArgs = freeCompilerArgs + listOf(
       "-Xopt-in=kotlin.RequiresOptIn",
     )

@@ -6,6 +6,7 @@ import arrow.core.right
 import io.skinnydoo.common.AlreadyExistsError
 import io.skinnydoo.common.Email
 import io.skinnydoo.common.LoginError
+import io.skinnydoo.common.NotFoundError
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.UserExists
 import io.skinnydoo.common.Username
@@ -21,7 +22,6 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 interface AuthRepository {
   suspend fun register(username: Username, email: Email, password: Password): Either<AlreadyExistsError, User>
   suspend fun login(email: Email, password: Password): Either<LoginError, User>
-  suspend fun login(username: Username, password: Password): Either<LoginError, User>
 }
 
 class DefaultAuthRepository(private val userRepository: UserRepository) : AuthRepository {
@@ -50,19 +50,13 @@ class DefaultAuthRepository(private val userRepository: UserRepository) : AuthRe
 
   override suspend fun login(email: Email, password: Password): Either<LoginError, User> {
     return when (val result = userRepository.userWithEmail(email)) {
-      is Either.Left -> LoginError.UserNotFound.left()
-      is Either.Right -> if (checkPassword(password.text, result.value.password)) {
-        result.value.right()
-      } else LoginError.PasswordInvalid.left()
-    }
-  }
-
-  override suspend fun login(username: Username, password: Password): Either<LoginError, User> {
-    return when (val result = userRepository.userWithUsername(username)) {
-      is Either.Left -> LoginError.UserNotFound.left()
-      is Either.Right -> if (checkPassword(password.text, result.value.password)) {
-        result.value.right()
-      } else LoginError.PasswordInvalid.left()
+      is Either.Right -> {
+        if (checkPassword(password.text, result.value.password)) result.value.right()
+        else LoginError.PasswordInvalid.left()
+      }
+      is Either.Left -> when (result.value) {
+        is NotFoundError.UserNotFound -> LoginError.EmailUnknown.left()
+      }
     }
   }
 }

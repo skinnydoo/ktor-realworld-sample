@@ -52,16 +52,16 @@ data class LoggedInUser(
 }
 
 @Serializable
-data class UserLoginWithEmail(val email: Email, val password: Password)
+data class UserLoginRequest(val user: UserLoginCredentials)
 
 @Serializable
-data class UserLoginWithUserName(val username: Username, val password: Password)
+data class UserLoginCredentials(val email: Email, val password: Password)
 
 @Serializable
-data class NewUser(val username: Username, val email: Email, val password: Password)
+data class RegisterUserRequest(val user: NewUserCredentials)
 
 @Serializable
-data class NewUserRequest(val user: NewUser)
+data class NewUserCredentials(val username: Username, val email: Email, val password: Password)
 
 @Serializable
 data class UserResponse(val user: LoggedInUser)

@@ -1,22 +1,21 @@
-package io.skinnydoo.users.usecases
+package io.skinnydoo.users.auth
 
 import arrow.core.Either
 import io.skinnydoo.common.LoginError
 import io.skinnydoo.common.ResultUseCase
 import io.skinnydoo.users.User
-import io.skinnydoo.users.UserLoginWithEmail
-import io.skinnydoo.users.auth.AuthRepository
+import io.skinnydoo.users.UserLoginCredentials
 import kotlinx.coroutines.CoroutineDispatcher
 
-class LoginUserWithEmail(
+class LoginUser(
   dispatcher: CoroutineDispatcher,
   private val repository: AuthRepository,
-) : ResultUseCase<LoginUserWithEmail.Params, Either<LoginError, User>>(dispatcher) {
+) : ResultUseCase<LoginUser.Params, Either<LoginError, User>>(dispatcher) {
 
   override suspend fun execute(params: Params): Either<LoginError, User> {
     val (email, password) = params.login
     return repository.login(email, password)
   }
 
-  data class Params(val login: UserLoginWithEmail)
+  data class Params(val login: UserLoginCredentials)
 }

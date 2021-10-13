@@ -4,10 +4,9 @@ import io.skinnydoo.users.DefaultUserRepository
 import io.skinnydoo.users.UserRepository
 import io.skinnydoo.users.auth.AuthRepository
 import io.skinnydoo.users.auth.DefaultAuthRepository
+import io.skinnydoo.users.auth.LoginUser
+import io.skinnydoo.users.auth.RegisterUser
 import io.skinnydoo.users.usecases.GetUserWithId
-import io.skinnydoo.users.usecases.LoginUserWithEmail
-import io.skinnydoo.users.usecases.LoginUserWithUsername
-import io.skinnydoo.users.usecases.RegisterUser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
@@ -32,8 +31,7 @@ val coroutinesModule = module {
 
 private val useCasesModule = module {
   single { RegisterUser(get(named("IO")), get()) }
-  single { LoginUserWithEmail(get(named("IO")), get()) }
-  single { LoginUserWithUsername(get(named("IO")), get()) }
+  single { LoginUser(get(named("IO")), get()) }
   single { GetUserWithId(get(named("IO")), get()) }
 }
 
