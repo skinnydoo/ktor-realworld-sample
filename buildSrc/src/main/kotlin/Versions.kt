@@ -10,4 +10,5 @@ object Versions {
   const val spotless = "5.16.0"
   const val ktlint = "0.42.1"
   const val arrow = "1.0.0"
+  const val serializationJson = "1.3.0"
 }

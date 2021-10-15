@@ -4,16 +4,16 @@ import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @JvmInline
-value class UserId(val text: UUID)
+value class UserId(val value: UUID)
 
 @JvmInline
 @Serializable
-value class Email(val text: String)
+value class Email(val value: String)
 
 @JvmInline
 @Serializable
-value class Username(val text: String)
+value class Username(val value: String)
 
 @JvmInline
 @Serializable
-value class Password(val text: String)
+value class Password(val value: String)

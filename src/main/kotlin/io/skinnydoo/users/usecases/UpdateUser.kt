@@ -1,0 +1,22 @@
+package io.skinnydoo.users.usecases
+
+import arrow.core.Either
+import io.skinnydoo.common.EitherUseCase
+import io.skinnydoo.common.NotFoundError
+import io.skinnydoo.users.User
+import io.skinnydoo.users.UserRepository
+import io.skinnydoo.users.UserUpdateDetails
+import kotlinx.coroutines.CoroutineDispatcher
+import java.util.UUID
+
+class UpdateUser(
+  dispatcher: CoroutineDispatcher,
+  private val repository: UserRepository,
+) : EitherUseCase<UpdateUser.Params, Either<NotFoundError, User>>(dispatcher) {
+
+  override suspend fun execute(params: Params): Either<NotFoundError, User> {
+    return repository.updateUserDetails(params.userId, params.details)
+  }
+
+  data class Params(val userId: UUID, val details: UserUpdateDetails)
+}

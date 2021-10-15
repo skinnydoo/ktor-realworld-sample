@@ -32,16 +32,16 @@ class DefaultAuthRepository(private val userRepository: UserRepository) : AuthRe
     password: Password,
   ): Either<AlreadyExistsError, User> = newSuspendedTransaction {
     val userExists = UserTable
-      .select { UserTable.username eq username.text or (UserTable.email eq email.text) }
+      .select { UserTable.username eq username.value or (UserTable.email eq email.value) }
       .firstOrNull() != null
 
     if (userExists) {
       Either.Left(UserExists())
     } else {
       val id = UserTable.insertAndGetId {
-        it[UserTable.username] = username.text
-        it[UserTable.email] = email.text
-        it[UserTable.password] = password.text
+        it[UserTable.username] = username.value
+        it[UserTable.email] = email.value
+        it[UserTable.password] = password.value
       }
       val user = UserTable.select { UserTable.id eq id }.map((User)::fromRow).single()
       Either.Right(user)
@@ -51,7 +51,7 @@ class DefaultAuthRepository(private val userRepository: UserRepository) : AuthRe
   override suspend fun login(email: Email, password: Password): Either<LoginError, User> {
     return when (val result = userRepository.userWithEmail(email)) {
       is Either.Right -> {
-        if (checkPassword(password.text, result.value.password)) result.value.right()
+        if (checkPassword(password.value, result.value.password)) result.value.right()
         else LoginError.PasswordInvalid.left()
       }
       is Either.Left -> when (result.value) {

@@ -64,4 +64,10 @@ data class RegisterUserRequest(val user: NewUserCredentials)
 data class NewUserCredentials(val username: Username, val email: Email, val password: Password)
 
 @Serializable
+data class UserUpdateRequest(val user: UserUpdateDetails)
+
+@Serializable
+data class UserUpdateDetails(val email: Email? = null, val bio: String? = null, val image: String? = null)
+
+@Serializable
 data class UserResponse(val user: LoggedInUser)

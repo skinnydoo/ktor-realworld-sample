@@ -4,6 +4,7 @@ object Deps {
   const val mysqlConnector = "mysql:mysql-connector-java:${Versions.mysqlConnector}"
   const val hikaricp = "com.zaxxer:HikariCP:${Versions.hikaricp}"
   const val jbcrypt = "org.mindrot:jbcrypt:${Versions.jbcrypt}"
+  const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationJson}"
 
   object Arrow {
     const val stack = "io.arrow-kt:arrow-stack:${Versions.arrow}"

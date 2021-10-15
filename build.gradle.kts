@@ -33,6 +33,7 @@ dependencies {
   implementation(Deps.Ktor.netty)
   implementation(Deps.Ktor.session)
   implementation(Deps.Ktor.serialization)
+  implementation(Deps.serializationJson)
 
   implementation(Deps.Ktor.Client.core)
   implementation(Deps.Ktor.Client.cio)
@@ -79,6 +80,7 @@ tasks.withType<KotlinCompile>().configureEach {
     languageVersion = "1.6"
     freeCompilerArgs = freeCompilerArgs + listOf(
       "-Xopt-in=kotlin.RequiresOptIn",
+      "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
     )
   }
 }

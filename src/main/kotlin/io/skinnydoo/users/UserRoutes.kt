@@ -3,9 +3,6 @@
 package io.skinnydoo.users
 
 import arrow.core.Either
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.Some
 import io.ktor.application.Application
 import io.ktor.application.application
 import io.ktor.application.call
@@ -17,6 +14,7 @@ import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.locations.post
+import io.ktor.locations.put
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -28,11 +26,13 @@ import io.skinnydoo.common.AlreadyExistsError
 import io.skinnydoo.common.ErrorEnvelope
 import io.skinnydoo.common.JwtService
 import io.skinnydoo.common.LoginError
+import io.skinnydoo.common.NotFoundError
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.hash
 import io.skinnydoo.common.jwtConfig
 import io.skinnydoo.users.auth.LoginUser
 import io.skinnydoo.users.auth.RegisterUser
+import io.skinnydoo.users.usecases.UpdateUser
 import org.koin.core.parameter.parametersOf
 import org.koin.ktor.ext.inject
 
@@ -56,7 +56,7 @@ fun Route.createUser() {
 
   post<UserCreateRoute> {
     val newUser = call.receive<RegisterUserRequest>().user
-    val hashedPassword = Password(hash(newUser.password.text))
+    val hashedPassword = Password(hash(newUser.password.value))
     val newUserWithHashedPassword = newUser.copy(password = hashedPassword)
     registerUser(RegisterUser.Params(newUserWithHashedPassword))
       .onSuccess { result ->
@@ -103,7 +103,7 @@ fun Route.loginUser() {
             val token = jwtService.generateToken(user)
             call.respond(UserResponse(LoggedInUser.fromUser(user, token)))
           }
-          is Either.Left -> when (val error = result.value) {
+          is Either.Left -> when (result.value) {
             LoginError.PasswordInvalid -> {
               call.respond(
                 status = HttpStatusCode.Unauthorized,
@@ -134,13 +134,51 @@ fun Route.loginUser() {
 fun Route.getCurrentUser() {
   authenticate("auth-jwt") {
     get<UserRoute> {
-      when (val maybePrincipal = Option.fromNullable(call.principal<User>())) {
-        is Some -> call.respond(UserResponse(LoggedInUser.fromUser(maybePrincipal.value, "")))
-        None -> call.respond(
+      val loggedInUser = call.principal<User>()
+        ?: return@get call.respond(
           HttpStatusCode.Unauthorized,
           ErrorEnvelope(mapOf("body" to listOf("Unknown user")))
         )
-      }
+      call.respond(UserResponse(LoggedInUser.fromUser(loggedInUser, token = "")))
+    }
+  }
+}
+
+/**
+ * Updated user information for current user
+ * PUT /v1/user
+ */
+fun Route.updateUser() {
+  val updateUser by inject<UpdateUser>()
+
+  authenticate("auth-jwt") {
+    put<UserRoute> {
+      val body = call.receive<UserUpdateRequest>().user
+
+      val loggedInUser = call.principal<User>()
+        ?: return@put call.respond(
+          HttpStatusCode.Unauthorized,
+          ErrorEnvelope(mapOf("body" to listOf("Unknown user")))
+        )
+
+      updateUser(UpdateUser.Params(loggedInUser.id, body))
+        .fold(
+          ifLeft = { e ->
+            application.log.error("Failed to update user", e)
+            call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.localizedMessage))))
+          },
+          ifRight = { result ->
+            when (result) {
+              is Either.Left -> when (result.value) {
+                is NotFoundError.UserNotFound -> call.respond(
+                  HttpStatusCode.UnprocessableEntity,
+                  ErrorEnvelope(mapOf("body" to listOf("Something went wrong")))
+                )
+              }
+              is Either.Right -> call.respond(UserResponse(LoggedInUser.fromUser(result.value, token = "")))
+            }
+          }
+        )
     }
   }
 }
@@ -151,6 +189,7 @@ fun Application.registerUserRoutes() {
       createUser()
       loginUser()
       getCurrentUser()
+      updateUser()
     }
   }
 }

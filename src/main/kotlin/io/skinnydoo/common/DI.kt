@@ -7,6 +7,7 @@ import io.skinnydoo.users.auth.DefaultAuthRepository
 import io.skinnydoo.users.auth.LoginUser
 import io.skinnydoo.users.auth.RegisterUser
 import io.skinnydoo.users.usecases.GetUserWithId
+import io.skinnydoo.users.usecases.UpdateUser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
@@ -33,6 +34,7 @@ private val useCasesModule = module {
   single { RegisterUser(get(named("IO")), get()) }
   single { LoginUser(get(named("IO")), get()) }
   single { GetUserWithId(get(named("IO")), get()) }
+  single { UpdateUser(get(named("IO")), get()) }
 }
 
 private val appModule = module {
@@ -43,12 +45,11 @@ private val appModule = module {
     Json {
       encodeDefaults = true
       isLenient = true
-      ignoreUnknownKeys = true
-      coerceInputValues = true
       allowSpecialFloatingPointValues = true
       allowStructuredMapKeys = true
       prettyPrint = false
       useArrayPolymorphism = true
+      coerceInputValues = true
     }
   }
 }
