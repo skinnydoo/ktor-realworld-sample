@@ -16,6 +16,7 @@ import io.skinnydoo.common.JwtService
 import io.skinnydoo.common.config.configure
 import io.skinnydoo.common.dbConfig
 import io.skinnydoo.common.jwtConfig
+import io.skinnydoo.profiles.registerProfileRoutes
 import io.skinnydoo.users.registerUserRoutes
 import io.skinnydoo.users.usecases.GetUserWithId
 import kotlinx.serialization.json.Json
@@ -57,11 +58,12 @@ fun Application.module() {
         val claim = credential.payload.getClaim("id").asString()
         claim?.let { id ->
           getUserWithId(GetUserWithId.Params(UUID.fromString(id)))
-            .fold(onSuccess = { it.orNull() }, onFailure = { null })
+            .fold(ifLeft = { null }, ifRight = { it.orNull() })
         }
       }
     }
   }
 
   registerUserRoutes()
+  registerProfileRoutes()
 }

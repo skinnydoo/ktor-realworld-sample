@@ -59,28 +59,30 @@ fun Route.createUser() {
     val hashedPassword = Password(hash(newUser.password.value))
     val newUserWithHashedPassword = newUser.copy(password = hashedPassword)
     registerUser(RegisterUser.Params(newUserWithHashedPassword))
-      .onSuccess { result ->
-        when (result) {
-          is Either.Right -> {
-            val user = result.value
-            val token = jwtService.generateToken(user)
-            call.respond(HttpStatusCode.Created, UserResponse(LoggedInUser.fromUser(user, token)))
-          }
-          is Either.Left -> when (result.value) {
-            is AlreadyExistsError.UserAlreadyExist -> {
-              application.log.error("User already exists")
-              call.respond(
-                HttpStatusCode.UnprocessableEntity,
-                ErrorEnvelope(mapOf("body" to listOf("user exists")))
-              )
+      .fold(
+        ifLeft = { e ->
+          application.log.error("Failed to register user", e)
+          call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.localizedMessage))))
+        },
+        ifRight = { result ->
+          when (result) {
+            is Either.Right -> {
+              val user = result.value
+              val token = jwtService.generateToken(user)
+              call.respond(HttpStatusCode.Created, UserResponse(LoggedInUser.fromUser(user, token)))
+            }
+            is Either.Left -> when (result.value) {
+              is AlreadyExistsError.UserAlreadyExist -> {
+                application.log.error("User already exists")
+                call.respond(
+                  HttpStatusCode.UnprocessableEntity,
+                  ErrorEnvelope(mapOf("body" to listOf("user exists")))
+                )
+              }
             }
           }
         }
-      }
-      .onFailure { e ->
-        application.log.error("Failed to register user", e)
-        call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf("Error unknown"))))
-      }
+      )
   }
 }
 
@@ -96,33 +98,35 @@ fun Route.loginUser() {
   post<UserLoginRoute> {
     val body = call.receive<UserLoginRequest>().user
     loginWithEmail(LoginUser.Params(body))
-      .onSuccess { result ->
-        when (result) {
-          is Either.Right -> {
-            val user = result.value
-            val token = jwtService.generateToken(user)
-            call.respond(UserResponse(LoggedInUser.fromUser(user, token)))
-          }
-          is Either.Left -> when (result.value) {
-            LoginError.PasswordInvalid -> {
-              call.respond(
-                status = HttpStatusCode.Unauthorized,
-                message = ErrorEnvelope(mapOf("body" to listOf("Invalid password")))
-              )
+      .fold(
+        ifLeft = { e ->
+          application.log.error("Failed to login user", e)
+          call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.localizedMessage))))
+        },
+        ifRight = { result ->
+          when (result) {
+            is Either.Right -> {
+              val user = result.value
+              val token = jwtService.generateToken(user)
+              call.respond(UserResponse(LoggedInUser.fromUser(user, token)))
             }
-            LoginError.EmailUnknown -> {
-              call.respond(
-                status = HttpStatusCode.Unauthorized,
-                message = ErrorEnvelope(mapOf("body" to listOf("Unknown email")))
-              )
+            is Either.Left -> when (result.value) {
+              LoginError.PasswordInvalid -> {
+                call.respond(
+                  status = HttpStatusCode.Unauthorized,
+                  message = ErrorEnvelope(mapOf("body" to listOf("Invalid password")))
+                )
+              }
+              LoginError.EmailUnknown -> {
+                call.respond(
+                  status = HttpStatusCode.Unauthorized,
+                  message = ErrorEnvelope(mapOf("body" to listOf("Unknown email")))
+                )
+              }
             }
           }
         }
-      }
-      .onFailure { e ->
-        application.log.error("Failed to login user", e)
-        call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf("Error unknown"))))
-      }
+      )
   }
 }
 

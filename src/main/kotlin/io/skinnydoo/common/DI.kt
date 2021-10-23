@@ -1,5 +1,10 @@
 package io.skinnydoo.common
 
+import io.skinnydoo.profiles.DefaultProfileRepository
+import io.skinnydoo.profiles.ProfileRepository
+import io.skinnydoo.profiles.followUserUseCaseFactory
+import io.skinnydoo.profiles.getUserProfileUseCaseFactory
+import io.skinnydoo.profiles.unfollowUserUseCaseFactory
 import io.skinnydoo.users.DefaultUserRepository
 import io.skinnydoo.users.UserRepository
 import io.skinnydoo.users.auth.AuthRepository
@@ -22,6 +27,7 @@ fun koinModules(): List<Module> = listOf(appModule, repositoryModule, coroutines
 private val repositoryModule = module {
   single<DefaultUserRepository>() bind UserRepository::class
   single { DefaultAuthRepository(get()) } bind AuthRepository::class
+  single { DefaultProfileRepository(get()) } bind ProfileRepository::class
 }
 
 val coroutinesModule = module {
@@ -35,6 +41,10 @@ private val useCasesModule = module {
   single { LoginUser(get(named("IO")), get()) }
   single { GetUserWithId(get(named("IO")), get()) }
   single { UpdateUser(get(named("IO")), get()) }
+
+  factory { getUserProfileUseCaseFactory(get(named("IO")), get()) }
+  factory(named("followUser")) { followUserUseCaseFactory(get(named("IO")), get()) }
+  factory(named("unfollowUser")) { unfollowUserUseCaseFactory(get(named("IO")), get()) }
 }
 
 private val appModule = module {

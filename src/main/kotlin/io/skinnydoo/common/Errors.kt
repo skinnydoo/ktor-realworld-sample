@@ -20,6 +20,9 @@ sealed class InvalidPropertyError {
   data class EmailInvalid(val message: String = "Email invalid") : InvalidPropertyError()
 }
 
+@JvmInline
+value class InternalServerError(val message: String)
+
 /*private fun format(base: String, message: String?): String = buildString {
   append(base)
   if (!message.isNullOrEmpty()) {

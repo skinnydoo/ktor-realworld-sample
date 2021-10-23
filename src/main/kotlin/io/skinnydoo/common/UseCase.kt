@@ -7,8 +7,17 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.time.Duration
 
+/**
+ * Executes business logic asynchronously.
+ */
 abstract class UseCase<in P>(private val dispatcher: CoroutineDispatcher) {
 
+  /**
+   * Executes the use case asynchronously.
+   *
+   * @param params the input parameters to run the use case with.
+   * @param timeoutMs a timeout within which the use case must run.
+   */
   suspend operator fun invoke(params: P, timeoutMs: Long = defaultTimeoutMs) {
     runCatching {
       withTimeout(timeoutMs) {
@@ -25,7 +34,6 @@ abstract class UseCase<in P>(private val dispatcher: CoroutineDispatcher) {
    * Override this to set the code to be executed.
    * @param params the input parameters to run the use case with
    */
-  @Throws(RuntimeException::class)
   protected abstract suspend fun execute(params: P)
 
   companion object {
@@ -33,26 +41,18 @@ abstract class UseCase<in P>(private val dispatcher: CoroutineDispatcher) {
   }
 }
 
+/**
+ * Executes business logic asynchronously.
+ */
 abstract class ResultUseCase<in P, R>(private val dispatcher: CoroutineDispatcher) {
 
-  suspend operator fun invoke(params: P): Result<R> = runCatching {
-    withContext(dispatcher) { execute(params) }
-  }.onFailure { e ->
-    if (e is CancellationException) {
-      throw e // Do not suppress CancellationException. Allow parent coroutines to cancel
-    }
-  }
-
   /**
-   * Override this to set the code to be executed.
+   * Executes the use case asynchronously and returns an [Either].
+   *
+   * @return an [Either].
+   *
    * @param params the input parameters to run the use case with
    */
-  @Throws(RuntimeException::class)
-  protected abstract suspend fun execute(params: P): R
-}
-
-abstract class EitherUseCase<in P, R>(private val dispatcher: CoroutineDispatcher) {
-
   suspend operator fun invoke(params: P): Either<Throwable, R> = Either.catch {
     withContext(dispatcher) { execute(params) }
   }
@@ -61,6 +61,5 @@ abstract class EitherUseCase<in P, R>(private val dispatcher: CoroutineDispatche
    * Override this to set the code to be executed.
    * @param params the input parameters to run the use case with
    */
-  @Throws(RuntimeException::class)
   protected abstract suspend fun execute(params: P): R
 }
