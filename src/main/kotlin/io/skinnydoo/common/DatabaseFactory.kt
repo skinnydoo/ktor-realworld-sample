@@ -73,6 +73,8 @@ class DefaultDatabaseFactory(private val dbConfig: DBConfig) : DatabaseFactory {
       driverClassName = dbConfig.driver
       username = dbConfig.username
       password = dbConfig.password
+
+      addDataSourceProperty("rewriteBatchedStatements", true)
     }.also { it.validate() }
     return HikariDataSource(config)
   }

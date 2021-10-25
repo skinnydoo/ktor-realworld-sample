@@ -7,6 +7,9 @@ import java.util.UUID
 value class UserId(val value: UUID)
 
 @JvmInline
+value class Slug(val value: UUID)
+
+@JvmInline
 @Serializable
 value class Email(val value: String)
 

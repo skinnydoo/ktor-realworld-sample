@@ -1,7 +1,7 @@
 package io.skinnydoo.profiles
 
 import arrow.core.Either
-import io.skinnydoo.common.NotFoundError
+import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.Username
 import io.skinnydoo.common.extensions.orFalse
 import io.skinnydoo.users.FollowerTable
@@ -16,35 +16,53 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import java.util.UUID
 
 interface ProfileRepository {
-  suspend fun getUserProfile(username: Username, selfId: UUID?): Either<NotFoundError, Profile>
-  suspend fun followUser(username: Username, selfId: UUID): Either<NotFoundError, Profile>
-  suspend fun unfollowUser(username: Username, selfId: UUID): Either<NotFoundError, Profile>
+  suspend fun getUserProfile(username: Username, selfId: UUID?): Either<UserErrors, Profile>
+  suspend fun getUserProfile(userId: UUID, selfId: UUID?): Either<UserErrors, Profile>
+
+  suspend fun followUser(username: Username, selfId: UUID): Either<UserErrors, Profile>
+  suspend fun followUser(userId: UUID, selfId: UUID): Either<UserErrors, Profile>
+
+  suspend fun unfollowUser(username: Username, selfId: UUID): Either<UserErrors, Profile>
 }
 
 class DefaultProfileRepository(private val userRepository: UserRepository) : ProfileRepository {
 
+  override suspend fun getUserProfile(userId: UUID, selfId: UUID?): Either<UserErrors, Profile> {
+    return userRepository.userWithId(userId)
+      .map { user ->
+        val isFollower = selfId?.let { isFollower(it, user.id) }.orFalse()
+        Profile.fromUser(user, isFollower)
+      }
+  }
+
   override suspend fun getUserProfile(
     username: Username,
     selfId: UUID?,
-  ): Either<NotFoundError, Profile> = userRepository.userWithUsername(username)
+  ): Either<UserErrors, Profile> = userRepository.userWithUsername(username)
     .map { user ->
       val isFollower = selfId?.let { isFollower(it, user.id) }.orFalse()
       Profile.fromUser(user, isFollower)
     }
 
-  override suspend fun followUser(username: Username, selfId: UUID): Either<NotFoundError, Profile> {
-    return userRepository.userWithUsername(username)
-      .tap { user -> followUser(selfId, user.id) }
+  override suspend fun followUser(userId: UUID, selfId: UUID): Either<UserErrors, Profile> {
+    return userRepository.userWithId(userId)
+      .tap { addFollower(selfId, userId) }
       .map { Profile.fromUser(it, following = true) }
   }
 
-  override suspend fun unfollowUser(username: Username, selfId: UUID): Either<NotFoundError, Profile> {
+  override suspend fun followUser(username: Username, selfId: UUID): Either<UserErrors, Profile> {
     return userRepository.userWithUsername(username)
-      .tap { unFollowUser(selfId, it.id) }
+      .tap { user -> addFollower(selfId, user.id) }
+      .map { Profile.fromUser(it, following = true) }
+  }
+
+  override suspend fun unfollowUser(username: Username, selfId: UUID): Either<UserErrors, Profile> {
+    return userRepository.userWithUsername(username)
+      .tap { removeFollower(selfId, it.id) }
       .map { Profile.fromUser(it, following = false) }
   }
 
-  private suspend fun followUser(selfId: UUID, otherId: UUID) {
+  private suspend fun addFollower(selfId: UUID, otherId: UUID) {
     newSuspendedTransaction {
       FollowerTable.insert {
         it[userId] = selfId
@@ -53,7 +71,7 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
     }
   }
 
-  private suspend fun unFollowUser(selfId: UUID, otherId: UUID) {
+  private suspend fun removeFollower(selfId: UUID, otherId: UUID) {
     newSuspendedTransaction {
       FollowerTable.deleteWhere {
         FollowerTable.userId eq selfId and (FollowerTable.followerId eq otherId)

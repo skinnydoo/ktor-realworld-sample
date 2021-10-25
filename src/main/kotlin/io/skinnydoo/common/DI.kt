@@ -1,5 +1,11 @@
 package io.skinnydoo.common
 
+import io.skinnydoo.articles.ArticleRepository
+import io.skinnydoo.articles.DefaultArticleRepository
+import io.skinnydoo.articles.addArticleUseCaseFactory
+import io.skinnydoo.articles.getArticleWithSlugUseCaseFactory
+import io.skinnydoo.articles.tags.DefaultTagRepository
+import io.skinnydoo.articles.tags.TagRepository
 import io.skinnydoo.profiles.DefaultProfileRepository
 import io.skinnydoo.profiles.ProfileRepository
 import io.skinnydoo.profiles.followUserUseCaseFactory
@@ -16,23 +22,33 @@ import io.skinnydoo.users.usecases.UpdateUser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
+import org.koin.core.KoinApplication
+import org.koin.core.logger.Level
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.dsl.single
+import org.koin.logger.SLF4JLogger
+
+fun KoinApplication.configure() {
+  SLF4JLogger(level = Level.DEBUG)
+  modules(koinModules())
+}
 
 fun koinModules(): List<Module> = listOf(appModule, repositoryModule, coroutinesModule, useCasesModule)
 
 private val repositoryModule = module {
   single<DefaultUserRepository>() bind UserRepository::class
-  single { DefaultAuthRepository(get()) } bind AuthRepository::class
+  single { DefaultAuthRepository(get(), get()) } bind AuthRepository::class
   single { DefaultProfileRepository(get()) } bind ProfileRepository::class
+  single { DefaultArticleRepository(get(), get()) } bind ArticleRepository::class
+  single { DefaultTagRepository() } bind TagRepository::class
 }
 
 val coroutinesModule = module {
-  single<CoroutineDispatcher>(named("IO")) { Dispatchers.IO }
-  single<CoroutineDispatcher>(named("Default")) { Dispatchers.Default }
+  single(named("IO")) { Dispatchers.IO }
+  single(named("Default")) { Dispatchers.Default }
   single<CoroutineDispatcher>(named("Main")) { Dispatchers.Main }
 }
 
@@ -45,6 +61,8 @@ private val useCasesModule = module {
   factory { getUserProfileUseCaseFactory(get(named("IO")), get()) }
   factory(named("followUser")) { followUserUseCaseFactory(get(named("IO")), get()) }
   factory(named("unfollowUser")) { unfollowUserUseCaseFactory(get(named("IO")), get()) }
+  factory(named("addArticle")) { addArticleUseCaseFactory(get(named("IO")), get()) }
+  factory(named("getArticle")) { getArticleWithSlugUseCaseFactory(get(named("IO")), get()) }
 }
 
 private val appModule = module {

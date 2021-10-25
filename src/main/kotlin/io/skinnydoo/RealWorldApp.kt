@@ -11,9 +11,11 @@ import io.ktor.features.StatusPages
 import io.ktor.locations.Locations
 import io.ktor.request.path
 import io.ktor.serialization.json
+import io.skinnydoo.articles.registerArticleRoutes
 import io.skinnydoo.common.DatabaseFactory
 import io.skinnydoo.common.JwtService
 import io.skinnydoo.common.config.configure
+import io.skinnydoo.common.configure
 import io.skinnydoo.common.dbConfig
 import io.skinnydoo.common.jwtConfig
 import io.skinnydoo.profiles.registerProfileRoutes
@@ -66,4 +68,5 @@ fun Application.module() {
 
   registerUserRoutes()
   registerProfileRoutes()
+  registerArticleRoutes()
 }

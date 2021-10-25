@@ -22,12 +22,11 @@ import io.ktor.routing.application
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.skinnydoo.API_V1
-import io.skinnydoo.common.AlreadyExistsError
 import io.skinnydoo.common.ErrorEnvelope
 import io.skinnydoo.common.JwtService
-import io.skinnydoo.common.LoginError
-import io.skinnydoo.common.NotFoundError
+import io.skinnydoo.common.LoginErrors
 import io.skinnydoo.common.Password
+import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.hash
 import io.skinnydoo.common.jwtConfig
 import io.skinnydoo.users.auth.LoginUser
@@ -72,12 +71,16 @@ fun Route.createUser() {
               call.respond(HttpStatusCode.Created, UserResponse(LoggedInUser.fromUser(user, token)))
             }
             is Either.Left -> when (result.value) {
-              is AlreadyExistsError.UserAlreadyExist -> {
+              is UserErrors.UserAlreadyExist -> {
                 application.log.error("User already exists")
                 call.respond(
                   HttpStatusCode.UnprocessableEntity,
                   ErrorEnvelope(mapOf("body" to listOf("user exists")))
                 )
+              }
+              is UserErrors.UserNotFound -> {
+                // we should not get here
+                application.log.error("User not found")
               }
             }
           }
@@ -111,13 +114,13 @@ fun Route.loginUser() {
               call.respond(UserResponse(LoggedInUser.fromUser(user, token)))
             }
             is Either.Left -> when (result.value) {
-              LoginError.PasswordInvalid -> {
+              LoginErrors.PasswordInvalid -> {
                 call.respond(
                   status = HttpStatusCode.Unauthorized,
                   message = ErrorEnvelope(mapOf("body" to listOf("Invalid password")))
                 )
               }
-              LoginError.EmailUnknown -> {
+              LoginErrors.EmailUnknown -> {
                 call.respond(
                   status = HttpStatusCode.Unauthorized,
                   message = ErrorEnvelope(mapOf("body" to listOf("Unknown email")))
@@ -173,8 +176,9 @@ fun Route.updateUser() {
           },
           ifRight = { result ->
             when (result) {
-              is Either.Left -> when (result.value) {
-                is NotFoundError.UserNotFound -> call.respond(
+              is Either.Left -> {
+                application.log.error(result.value.toString())
+                call.respond(
                   HttpStatusCode.UnprocessableEntity,
                   ErrorEnvelope(mapOf("body" to listOf("Something went wrong")))
                 )

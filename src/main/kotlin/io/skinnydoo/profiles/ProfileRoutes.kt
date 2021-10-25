@@ -3,7 +3,6 @@
 package io.skinnydoo.profiles
 
 import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.auth.principal
@@ -17,11 +16,10 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.util.pipeline.PipelineContext
 import io.skinnydoo.API_V1
 import io.skinnydoo.common.ErrorEnvelope
-import io.skinnydoo.common.NotFoundError
 import io.skinnydoo.common.Username
+import io.skinnydoo.common.config.handleErrors
 import io.skinnydoo.users.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
@@ -39,10 +37,8 @@ fun Route.getUserProfile() {
     get<UserProfileRoute> { params ->
       val self = call.principal<User>()
       getProfileForUser(self?.id, Username(params.username))
-        .fold(
-          ifLeft = { error -> handleError(error) },
-          ifRight = { profile -> call.respond(ProfileResponse(profile)) }
-        )
+        .map { ProfileResponse(it) }
+        .fold({ handleErrors(it) }, { call.respond(it) })
     }
   }
 }
@@ -59,10 +55,8 @@ fun Route.followUser() {
         )
 
       followUser(self.id, Username(params.username))
-        .fold(
-          ifLeft = { error -> handleError(error) },
-          ifRight = { call.respond(ProfileResponse(it)) }
-        )
+        .map { ProfileResponse(it) }
+        .fold({ handleErrors(it) }, { call.respond(it) })
     }
   }
 }
@@ -79,19 +73,8 @@ fun Route.unfollowUser() {
         )
 
       unfollowUser(self.id, Username(params.username))
-        .fold(
-          ifLeft = { error -> handleError(error) },
-          ifRight = { call.respond(ProfileResponse(it)) }
-        )
-    }
-  }
-}
-
-private suspend fun PipelineContext<Unit, ApplicationCall>.handleError(error: NotFoundError) {
-  when (error) {
-    is NotFoundError.UserNotFound -> {
-      val errorBody = ErrorEnvelope(mapOf("body" to listOf("unknown user")))
-      call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
+        .map { ProfileResponse(it) }
+        .fold({ handleErrors(it) }, { call.respond(it) })
     }
   }
 }

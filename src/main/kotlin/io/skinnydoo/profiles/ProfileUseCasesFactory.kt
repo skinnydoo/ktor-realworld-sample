@@ -1,17 +1,17 @@
 package io.skinnydoo.profiles
 
 import arrow.core.Either
-import io.skinnydoo.common.NotFoundError
+import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.Username
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
 typealias GetUserProfileUseCase =
-  suspend (selfId: UUID?, username: Username) -> Either<NotFoundError, Profile>
+  suspend (selfId: UUID?, username: Username) -> Either<UserErrors, Profile>
 
 typealias FollowUserUseCase =
-  suspend (selfId: UUID, username: Username) -> Either<NotFoundError, Profile>
+  suspend (selfId: UUID, username: Username) -> Either<UserErrors, Profile>
 
 typealias UnfollowUserUseCase = FollowUserUseCase
 

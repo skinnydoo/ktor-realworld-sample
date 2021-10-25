@@ -1,32 +1,37 @@
 package io.skinnydoo.common
 
-typealias UserNotFound = NotFoundError.UserNotFound
-typealias UserExists = AlreadyExistsError.UserAlreadyExist
+import java.util.UUID
 
-sealed class LoginError {
-  object EmailUnknown : LoginError()
-  object PasswordInvalid : LoginError()
+typealias UserNotFound = UserErrors.UserNotFound
+typealias UserExists = UserErrors.UserAlreadyExist
+
+typealias ArticleNotFound = ArticleErrors.ArticleNotFound
+typealias AuthorNotFound = ArticleErrors.AuthorNotFound
+
+typealias InvalidSlug = InvalidPropertyError.SlugInvalid
+
+sealed interface CommonErrors
+data class ServerError(val message: String = "Something went wrong") : CommonErrors
+object Forbidden : CommonErrors, ArticleErrors
+
+sealed interface LoginErrors {
+  object EmailUnknown : LoginErrors
+  object PasswordInvalid : LoginErrors
 }
 
-sealed class AlreadyExistsError {
-  data class UserAlreadyExist(val message: String = "User exists") : AlreadyExistsError()
+sealed interface UserErrors {
+  @JvmInline
+  value class UserAlreadyExist(val message: String = "User exists") : UserErrors
+
+  @JvmInline
+  value class UserNotFound(val message: String = "User not found") : UserErrors
 }
 
-sealed class NotFoundError {
-  data class UserNotFound(val message: String = "User not found") : NotFoundError()
+sealed interface ArticleErrors {
+  data class ArticleNotFound(val slug: UUID) : ArticleErrors
+  object AuthorNotFound : ArticleErrors
 }
 
 sealed class InvalidPropertyError {
-  data class EmailInvalid(val message: String = "Email invalid") : InvalidPropertyError()
+  data class SlugInvalid(val message: String = "Invalid slug") : InvalidPropertyError()
 }
-
-@JvmInline
-value class InternalServerError(val message: String)
-
-/*private fun format(base: String, message: String?): String = buildString {
-  append(base)
-  if (!message.isNullOrEmpty()) {
-    append(": ")
-    append(message)
-  }
-}*/
