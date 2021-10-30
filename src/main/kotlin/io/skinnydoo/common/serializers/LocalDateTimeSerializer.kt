@@ -9,7 +9,6 @@ import kotlinx.serialization.descriptors.nullable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -22,14 +21,12 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
   override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
 
   override fun serialize(encoder: Encoder, value: LocalDateTime) {
-    encoder.encodeString(ZonedDateTime.of(value, ZoneOffset.systemDefault())
-      .withZoneSameInstant(ZoneOffset.UTC)
-      .format(formatter))
+    encoder.encodeString(ZonedDateTime.of(value, ZoneOffset.systemDefault()).format(formatter))
   }
 
   override fun deserialize(decoder: Decoder): LocalDateTime {
-    return ZonedDateTime.of(LocalDateTime.parse(decoder.decodeString(), formatter), ZoneOffset.UTC)
-      .withZoneSameInstant(ZoneId.systemDefault())
+    return ZonedDateTime
+      .of(LocalDateTime.parse(decoder.decodeString(), formatter), ZoneOffset.systemDefault())
       .toLocalDateTime()
   }
 }

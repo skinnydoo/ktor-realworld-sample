@@ -11,14 +11,14 @@ import io.skinnydoo.profiles.ProfileRepository
 import io.skinnydoo.profiles.followUserUseCaseFactory
 import io.skinnydoo.profiles.getUserProfileUseCaseFactory
 import io.skinnydoo.profiles.unfollowUserUseCaseFactory
+import io.skinnydoo.users.AuthRepository
+import io.skinnydoo.users.DefaultAuthRepository
 import io.skinnydoo.users.DefaultUserRepository
 import io.skinnydoo.users.UserRepository
-import io.skinnydoo.users.auth.AuthRepository
-import io.skinnydoo.users.auth.DefaultAuthRepository
-import io.skinnydoo.users.auth.LoginUser
-import io.skinnydoo.users.auth.RegisterUser
-import io.skinnydoo.users.usecases.GetUserWithId
-import io.skinnydoo.users.usecases.UpdateUser
+import io.skinnydoo.users.getUserWithIdUseCaseFactory
+import io.skinnydoo.users.loginUserUseCaseFactory
+import io.skinnydoo.users.registerUserUseCaseFactory
+import io.skinnydoo.users.updateUserUseCaseFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
@@ -53,16 +53,15 @@ val coroutinesModule = module {
 }
 
 private val useCasesModule = module {
-  single { RegisterUser(get(named("IO")), get()) }
-  single { LoginUser(get(named("IO")), get()) }
-  single { GetUserWithId(get(named("IO")), get()) }
-  single { UpdateUser(get(named("IO")), get()) }
-
-  factory { getUserProfileUseCaseFactory(get(named("IO")), get()) }
-  factory(named("followUser")) { followUserUseCaseFactory(get(named("IO")), get()) }
-  factory(named("unfollowUser")) { unfollowUserUseCaseFactory(get(named("IO")), get()) }
-  factory(named("addArticle")) { addArticleUseCaseFactory(get(named("IO")), get()) }
-  factory(named("getArticle")) { getArticleWithSlugUseCaseFactory(get(named("IO")), get()) }
+  single(named("register")) { registerUserUseCaseFactory(get(named("IO")), get()) }
+  single(named("login")) { loginUserUseCaseFactory(get(named("IO")), get()) }
+  single(named("updateUser")) { updateUserUseCaseFactory(get(named("IO")), get()) }
+  single(named("getUserWithId")) { getUserWithIdUseCaseFactory(get(named("IO")), get()) }
+  single(named("getUserProfile")) { getUserProfileUseCaseFactory(get(named("IO")), get()) }
+  single(named("followUser")) { followUserUseCaseFactory(get(named("IO")), get()) }
+  single(named("unfollowUser")) { unfollowUserUseCaseFactory(get(named("IO")), get()) }
+  single(named("addArticle")) { addArticleUseCaseFactory(get(named("IO")), get()) }
+  single(named("getArticle")) { getArticleWithSlugUseCaseFactory(get(named("IO")), get()) }
 }
 
 private val appModule = module {

@@ -19,7 +19,7 @@ import io.ktor.routing.routing
 import io.skinnydoo.API_V1
 import io.skinnydoo.common.ErrorEnvelope
 import io.skinnydoo.common.Username
-import io.skinnydoo.common.config.handleErrors
+import io.skinnydoo.common.handleErrors
 import io.skinnydoo.users.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject

@@ -1,3 +1,3 @@
-package io.skinnydoo.common.extensions
+package io.skinnydoo.common
 
 fun Boolean?.orFalse() = this ?: false

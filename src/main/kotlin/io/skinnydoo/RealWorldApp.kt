@@ -1,5 +1,6 @@
 package io.skinnydoo
 
+import arrow.core.flatMap
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.auth.authentication
@@ -14,19 +15,19 @@ import io.ktor.serialization.json
 import io.skinnydoo.articles.registerArticleRoutes
 import io.skinnydoo.common.DatabaseFactory
 import io.skinnydoo.common.JwtService
-import io.skinnydoo.common.config.configure
+import io.skinnydoo.common.UserId
 import io.skinnydoo.common.configure
 import io.skinnydoo.common.dbConfig
 import io.skinnydoo.common.jwtConfig
 import io.skinnydoo.profiles.registerProfileRoutes
+import io.skinnydoo.users.GetUserWithId
 import io.skinnydoo.users.registerUserRoutes
-import io.skinnydoo.users.usecases.GetUserWithId
 import kotlinx.serialization.json.Json
 import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
 import org.slf4j.event.Level
-import java.util.UUID
 
 const val API_V1 = "/v1"
 
@@ -50,7 +51,7 @@ fun Application.module() {
   install(Locations)
 
   val jwtService by inject<JwtService> { parametersOf(environment.jwtConfig("jwt")) }
-  val getUserWithId by inject<GetUserWithId>()
+  val getUserWithId by inject<GetUserWithId>(named("getUserWithId"))
   authentication {
     jwt(name = "auth-jwt") {
       realm = jwtService.realm
@@ -59,8 +60,10 @@ fun Application.module() {
       validate { credential ->
         val claim = credential.payload.getClaim("id").asString()
         claim?.let { id ->
-          getUserWithId(GetUserWithId.Params(UUID.fromString(id)))
-            .fold(ifLeft = { null }, ifRight = { it.orNull() })
+          UserId.fromString(id)
+            .toEither { null }
+            .flatMap { getUserWithId(it) }
+            .orNull()
         }
       }
     }

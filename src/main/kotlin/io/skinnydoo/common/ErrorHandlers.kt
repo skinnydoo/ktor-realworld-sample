@@ -1,4 +1,4 @@
-package io.skinnydoo.common.config
+package io.skinnydoo.common
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -6,17 +6,21 @@ import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.util.pipeline.PipelineContext
-import io.skinnydoo.common.ArticleErrors
-import io.skinnydoo.common.CommonErrors
-import io.skinnydoo.common.ErrorEnvelope
-import io.skinnydoo.common.Forbidden
-import io.skinnydoo.common.InvalidPropertyError
-import io.skinnydoo.common.ServerError
-import io.skinnydoo.common.UserErrors
 
 fun StatusPages.Configuration.configure() {
   exception<Throwable> { e ->
     call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.localizedMessage))))
+  }
+}
+
+suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: LoginErrors) = when (error) {
+  LoginErrors.EmailUnknown -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Unknown email")))
+    call.respond(status = HttpStatusCode.Unauthorized, message = errorBody)
+  }
+  LoginErrors.PasswordInvalid -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Invalid password")))
+    call.respond(status = HttpStatusCode.Unauthorized, message = errorBody)
   }
 }
 

@@ -16,12 +16,12 @@ fun addArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
 ): AddArticleUseCase = { article, selfId ->
-  withContext(dispatcher) { repository.addArticle(article, selfId.value) }
+  withContext(dispatcher) { repository.addArticle(article, selfId) }
 }
 
 fun getArticleWithSlugUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
 ): GetArticleWithSlugUseCase = { slug, userId ->
-  withContext(dispatcher) { repository.articleWithSlug(slug.value, userId?.value) }
+  withContext(dispatcher) { repository.articleWithSlug(slug.value, userId) }
 }

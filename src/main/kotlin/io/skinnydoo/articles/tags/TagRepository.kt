@@ -21,13 +21,13 @@ class DefaultTagRepository : TagRepository {
     if (rr != null) {
       TagId(rr[TagTable.id].value) to Tag(rr[TagTable.tag])
     } else {
-      val stmt = TagTable.insert { it[TagTable.tag] = name }
+      val stmt = TagTable.insert { it[tag] = name }
       TagId(stmt[TagTable.id].value) to Tag(stmt[TagTable.tag])
     }
   }
 
   override suspend fun tagsForArticleWithSlug(slug: UUID): List<Tag> = newSuspendedTransaction {
-    TagTable.innerJoin(ArticleTagTable, { TagTable.id }, { ArticleTagTable.tagId })
+    TagTable.innerJoin(ArticleTagTable, { TagTable.id }, { tagId })
       .slice(TagTable.tag)
       .select { ArticleTagTable.articleSlug eq slug }
       .map { rr -> Tag(rr[TagTable.tag]) }

@@ -21,8 +21,7 @@ import io.skinnydoo.API_V1
 import io.skinnydoo.common.ErrorEnvelope
 import io.skinnydoo.common.InvalidSlug
 import io.skinnydoo.common.Slug
-import io.skinnydoo.common.UserId
-import io.skinnydoo.common.config.handleErrors
+import io.skinnydoo.common.handleErrors
 import io.skinnydoo.users.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
@@ -52,7 +51,7 @@ fun Route.createArticle() {
           ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
         )
 
-      addArticle(body, UserId(self.id))
+      addArticle(body, self.id)
         .map { ArticleResponse(it) }
         .fold({ handleErrors(it) }) { call.respond(it) }
     }
@@ -64,7 +63,7 @@ fun Route.getArticleWithSlug() {
 
   authenticate("auth-jwt", optional = true) {
     get<ArticleRoute> { params ->
-      val userId = call.principal<User>()?.let { UserId(it.id) }
+      val userId = call.principal<User>()?.id
 
       Either.catch { UUID.fromString(params.slug) }
         .mapLeft { InvalidSlug(it.localizedMessage) }

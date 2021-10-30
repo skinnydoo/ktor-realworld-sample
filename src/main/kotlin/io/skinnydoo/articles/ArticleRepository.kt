@@ -8,7 +8,8 @@ import io.skinnydoo.common.ArticleErrors
 import io.skinnydoo.common.ArticleNotFound
 import io.skinnydoo.common.AuthorNotFound
 import io.skinnydoo.common.ServerError
-import io.skinnydoo.common.extensions.orFalse
+import io.skinnydoo.common.UserId
+import io.skinnydoo.common.orFalse
 import io.skinnydoo.profiles.ProfileRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -21,8 +22,8 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import java.util.UUID
 
 interface ArticleRepository {
-  suspend fun addArticle(article: NewArticle, selfId: UUID): Either<ServerError, Article>
-  suspend fun articleWithSlug(slug: UUID, selfId: UUID?): Either<ArticleErrors, Article>
+  suspend fun addArticle(article: NewArticle, selfId: UserId): Either<ServerError, Article>
+  suspend fun articleWithSlug(slug: UUID, selfId: UserId?): Either<ArticleErrors, Article>
 }
 
 class DefaultArticleRepository(
@@ -32,7 +33,7 @@ class DefaultArticleRepository(
 
   override suspend fun addArticle(
     article: NewArticle,
-    selfId: UUID,
+    selfId: UserId,
   ): Either<ServerError, Article> = coroutineScope {
 
     val (tagIds, tags) = article.tagList
@@ -45,7 +46,7 @@ class DefaultArticleRepository(
         it[title] = article.title
         it[description] = article.description
         it[body] = article.body
-        it[authorId] = selfId
+        it[authorId] = selfId.value
       }
 
       stmt.resultedValues?.firstOrNull()?.let { rr ->
@@ -55,7 +56,7 @@ class DefaultArticleRepository(
           this[ArticleTagTable.tagId] = tagId.value
         }
 
-        profileRepository.getUserProfile(rr[ArticleTable.authorId].value, selfId)
+        profileRepository.getUserProfile(UserId(rr[ArticleTable.authorId].value), selfId)
           .fold(
             { Either.Left(ServerError()) },
             { Article.fromRow(rr, profile = it, tags, favoritesCount = 0, favorited = false).right() }
@@ -66,7 +67,7 @@ class DefaultArticleRepository(
 
   override suspend fun articleWithSlug(
     slug: UUID,
-    selfId: UUID?,
+    selfId: UserId?,
   ): Either<ArticleErrors, Article> = newSuspendedTransaction {
     val tags = tagRepository.tagsForArticleWithSlug(slug)
     val favorited = selfId?.let { isFavoritedArticle(slug, it) }.orFalse()
@@ -77,15 +78,15 @@ class DefaultArticleRepository(
       .singleOrNull()
       ?.let { rr ->
         profileRepository
-          .getUserProfile(rr[ArticleTable.authorId].value, selfId)
+          .getUserProfile(UserId(rr[ArticleTable.authorId].value), selfId)
           .fold(
             { AuthorNotFound.left() },
             { Article.fromRow(rr, profile = it, tags, favoritesCount, favorited).right() })
       } ?: Either.Left(ArticleNotFound(slug))
   }
 
-  private fun isFavoritedArticle(slug: UUID, selfId: UUID): Boolean = FavoriteArticleTable
-    .select { FavoriteArticleTable.articleSlug eq slug and (FavoriteArticleTable.userId eq selfId) }
+  private fun isFavoritedArticle(slug: UUID, selfId: UserId): Boolean = FavoriteArticleTable
+    .select { FavoriteArticleTable.articleSlug eq slug and (FavoriteArticleTable.userId eq selfId.value) }
     .empty()
     .not()
 

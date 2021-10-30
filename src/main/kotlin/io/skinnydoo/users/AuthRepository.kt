@@ -1,4 +1,4 @@
-package io.skinnydoo.users.auth
+package io.skinnydoo.users
 
 import arrow.core.Either
 import arrow.core.left
@@ -8,12 +8,10 @@ import io.skinnydoo.common.LoginErrors
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.UserExists
+import io.skinnydoo.common.UserId
 import io.skinnydoo.common.Username
 import io.skinnydoo.common.checkPassword
 import io.skinnydoo.profiles.ProfileRepository
-import io.skinnydoo.users.User
-import io.skinnydoo.users.UserRepository
-import io.skinnydoo.users.UserTable
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
@@ -45,11 +43,11 @@ class DefaultAuthRepository(
         it[UserTable.username] = username.value
         it[UserTable.email] = email.value
         it[UserTable.password] = password.value
-      }
+      }.let { UserId(it.value) }
 
-      profileRepository.followUser(id.value, id.value) // self follower
+      profileRepository.followUser(id, id) // self follower
 
-      val user = UserTable.select { UserTable.id eq id }.map(User.Companion::fromRow).single()
+      val user = UserTable.select { UserTable.id eq id.value }.map(User.Companion::fromRow).single()
       Either.Right(user)
     }
   }

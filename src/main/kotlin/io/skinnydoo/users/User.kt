@@ -3,13 +3,13 @@ package io.skinnydoo.users
 import io.ktor.auth.Principal
 import io.skinnydoo.common.Email
 import io.skinnydoo.common.Password
+import io.skinnydoo.common.UserId
 import io.skinnydoo.common.Username
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow
-import java.util.UUID
 
 data class User(
-  val id: UUID,
+  val id: UserId,
   val email: String,
   val password: String,
   val username: String,
@@ -19,7 +19,7 @@ data class User(
 
   companion object {
     fun fromRow(row: ResultRow): User = User(
-      id = row[UserTable.id].value,
+      id = UserId(row[UserTable.id].value),
       email = row[UserTable.email],
       password = row[UserTable.password],
       username = row[UserTable.username],
