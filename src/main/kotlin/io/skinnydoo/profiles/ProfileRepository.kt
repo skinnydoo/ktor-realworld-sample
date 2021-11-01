@@ -23,6 +23,7 @@ interface ProfileRepository {
   suspend fun followUser(userId: UserId, selfId: UserId): Either<UserErrors, Profile>
 
   suspend fun unfollowUser(username: Username, selfId: UserId): Either<UserErrors, Profile>
+  suspend fun isFollower(selfId: UserId, otherId: UserId): Boolean
 }
 
 class DefaultProfileRepository(private val userRepository: UserRepository) : ProfileRepository {
@@ -79,20 +80,18 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
     }
   }
 
-  private suspend fun isFollower(selfId: UserId, otherId: UserId): Boolean {
-    return newSuspendedTransaction {
-      UserTable
-        .join(
-          FollowerTable,
-          JoinType.INNER,
-          onColumn = UserTable.id,
-          otherColumn = FollowerTable.userId,
-          additionalConstraint = { FollowerTable.followerId eq otherId.value }
-        )
-        .slice(UserTable.id)
-        .select { UserTable.id eq selfId.value }
-        .empty()
-        .not()
-    }
+  override suspend fun isFollower(selfId: UserId, otherId: UserId): Boolean = newSuspendedTransaction {
+    UserTable
+      .join(
+        FollowerTable,
+        JoinType.INNER,
+        onColumn = UserTable.id,
+        otherColumn = FollowerTable.userId,
+        additionalConstraint = { FollowerTable.followerId eq otherId.value }
+      )
+      .slice(UserTable.id)
+      .select { UserTable.id eq selfId.value }
+      .empty()
+      .not()
   }
 }

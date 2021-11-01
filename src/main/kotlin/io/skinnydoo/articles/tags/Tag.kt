@@ -4,7 +4,11 @@ import kotlinx.serialization.Serializable
 
 @JvmInline
 @Serializable
-value class Tag(val value: String)
+value class Tag(val value: String) {
+  init {
+    require(value.isNotBlank()) { "Tag cannot be empty" }
+  }
+}
 
 @JvmInline
 @Serializable

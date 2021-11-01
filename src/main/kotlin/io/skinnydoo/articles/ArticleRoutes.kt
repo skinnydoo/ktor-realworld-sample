@@ -3,6 +3,7 @@
 package io.skinnydoo.articles
 
 import arrow.core.Either
+import arrow.core.getOrElse
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.auth.authenticate
@@ -18,9 +19,13 @@ import io.ktor.routing.Route
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.skinnydoo.API_V1
+import io.skinnydoo.articles.tags.Tag
 import io.skinnydoo.common.ErrorEnvelope
 import io.skinnydoo.common.InvalidSlug
+import io.skinnydoo.common.Limit
+import io.skinnydoo.common.Offset
 import io.skinnydoo.common.Slug
+import io.skinnydoo.common.Username
 import io.skinnydoo.common.handleErrors
 import io.skinnydoo.users.User
 import org.koin.core.qualifier.named
@@ -30,13 +35,39 @@ import java.util.UUID
 private const val ARTICLES = "/articles"
 
 @Location(ARTICLES)
-class ArticlesRoute
+data class ArticlesRoute(
+  val tag: String = "",
+  val author: String = "",
+  val favorited: String = "",
+  val limit: Int = 20,
+  val offset: Int = 0,
+)
 
 @Location("$ARTICLES/feed")
 class ArticleFeedRoute
 
 @Location("$ARTICLES/{slug}")
 data class ArticleRoute(val slug: String)
+
+fun Route.allArticles() {
+  val getAllArticles by inject<GetAllArticlesUseCase>(named("allArticles"))
+
+  authenticate("auth-jwt", optional = true) {
+    get<ArticlesRoute> { params ->
+      val selfId = call.principal<User>()?.id
+
+      val tag = params.tag.ifEmpty { null }?.let(::Tag)
+      val favoritedBy = params.favorited.ifEmpty { null }?.let(::Username)
+      val username = params.author.ifEmpty { null }?.let(::Username)
+      val limit = Limit.fromInt(params.limit).getOrElse { Limit.DEFAULT }
+      val offset = Offset.fromInt(params.offset).getOrElse { Offset.DEFAULT }
+
+      getAllArticles(selfId, tag, username, favoritedBy, limit, offset)
+        .map { ArticleListResponse(it) }
+        .fold({ handleErrors(it) }, { call.respond(it) })
+    }
+  }
+}
 
 fun Route.createArticle() {
   val addArticle by inject<AddArticleUseCase>(named("addArticle"))
@@ -81,6 +112,7 @@ fun Application.registerArticleRoutes() {
     route(API_V1) {
       createArticle()
       getArticleWithSlug()
+      allArticles()
     }
   }
 }

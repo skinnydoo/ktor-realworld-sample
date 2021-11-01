@@ -1,16 +1,16 @@
 package io.skinnydoo.articles.tags
 
 import io.skinnydoo.articles.ArticleTagTable
+import io.skinnydoo.common.Slug
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.util.UUID
 
 interface TagRepository {
   suspend fun getOrCreate(name: String): Pair<TagId, Tag>
-  suspend fun tagsForArticleWithSlug(slug: UUID): List<Tag>
+  suspend fun tagsForArticleWithSlug(slug: Slug): List<Tag>
   suspend fun allTags(): List<Tag>
 }
 
@@ -26,10 +26,10 @@ class DefaultTagRepository : TagRepository {
     }
   }
 
-  override suspend fun tagsForArticleWithSlug(slug: UUID): List<Tag> = newSuspendedTransaction {
+  override suspend fun tagsForArticleWithSlug(slug: Slug): List<Tag> = newSuspendedTransaction {
     TagTable.innerJoin(ArticleTagTable, { TagTable.id }, { tagId })
       .slice(TagTable.tag)
-      .select { ArticleTagTable.articleSlug eq slug }
+      .select { ArticleTagTable.articleSlug eq slug.value }
       .map { rr -> Tag(rr[TagTable.tag]) }
   }
 

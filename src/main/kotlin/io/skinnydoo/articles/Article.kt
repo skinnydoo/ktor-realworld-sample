@@ -60,3 +60,6 @@ data class CreateArticleRequest(val article: NewArticle)
 
 @Serializable
 data class ArticleResponse(val article: Article)
+
+@Serializable
+data class ArticleListResponse(val articles: List<Article>, val articlesCount: Int = articles.size)

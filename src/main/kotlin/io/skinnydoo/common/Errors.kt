@@ -1,7 +1,5 @@
 package io.skinnydoo.common
 
-import java.util.UUID
-
 typealias UserNotFound = UserErrors.UserNotFound
 typealias UserExists = UserErrors.UserAlreadyExist
 
@@ -20,15 +18,12 @@ sealed interface LoginErrors {
 }
 
 sealed interface UserErrors {
-  @JvmInline
-  value class UserAlreadyExist(val message: String = "User exists") : UserErrors
-
-  @JvmInline
-  value class UserNotFound(val message: String = "User not found") : UserErrors
+  data class UserAlreadyExist(val message: String = "User exists") : UserErrors
+  data class UserNotFound(val message: String = "User not found") : UserErrors
 }
 
 sealed interface ArticleErrors {
-  data class ArticleNotFound(val slug: UUID) : ArticleErrors
+  data class ArticleNotFound(val slug: Slug) : ArticleErrors
   object AuthorNotFound : ArticleErrors
 }
 
