@@ -11,8 +11,10 @@ import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
+import io.ktor.locations.delete
 import io.ktor.locations.get
 import io.ktor.locations.post
+import io.ktor.locations.put
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -136,6 +138,63 @@ fun Route.getArticleWithSlug() {
   }
 }
 
+/**
+ * Update an article. Auth is required
+ */
+fun Route.updateArticle() {
+  val updateArticle by inject<UpdateArticleUseCase>(named("updateArticle"))
+
+  authenticate("auth-jwt") {
+    put<ArticleRoute> { params ->
+      val self = call.principal<User>()
+        ?: return@put call.respond(HttpStatusCode.Unauthorized, ErrorEnvelope(mapOf("body" to listOf("Unauthorized"))))
+
+      val body = call.receive<UpdateArticleRequest>().article
+
+      Slug.fromString(params.slug)
+        .fold(
+          ifEmpty = {
+            val errorBody = ErrorEnvelope(mapOf("body" to listOf("Unknown slug")))
+            call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
+          },
+          ifSome = { slug ->
+            updateArticle(slug, body, self.id).map { ArticleResponse(it) }
+              .fold({ handleErrors(it) }, { call.respond(it) })
+          }
+        )
+    }
+  }
+}
+
+/**
+ * Delete an article. Auth is required
+ */
+fun Route.deleteArticle() {
+  val deleteArticleWithSlug by inject<DeleteArticleUseCase>(named("deleteArticle"))
+
+  authenticate("auth-jwt") {
+    delete<ArticleRoute> { params ->
+      val self = call.principal<User>()
+        ?: return@delete call.respond(
+          status = HttpStatusCode.Unauthorized,
+          message = ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
+        )
+
+      Slug.fromString(params.slug)
+        .fold(
+          ifEmpty = {
+            val errorBody = ErrorEnvelope(mapOf("body" to listOf("Unknown slug")))
+            call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
+          },
+          ifSome = { slug ->
+            deleteArticleWithSlug(slug, self.id)
+              .fold({ handleErrors(it) }, { call.respond(HttpStatusCode.NoContent) })
+          }
+        )
+    }
+  }
+}
+
 fun Application.registerArticleRoutes() {
   routing {
     route(API_V1) {
@@ -143,6 +202,8 @@ fun Application.registerArticleRoutes() {
       getArticleWithSlug()
       allArticles()
       articleFeed()
+      updateArticle()
+      deleteArticle()
     }
   }
 }

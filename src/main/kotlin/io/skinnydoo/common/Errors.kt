@@ -8,9 +8,9 @@ typealias AuthorNotFound = ArticleErrors.AuthorNotFound
 
 typealias InvalidSlug = InvalidPropertyError.SlugInvalid
 
-sealed interface CommonErrors
+sealed interface CommonErrors : ArticleErrors
 data class ServerError(val message: String = "Something went wrong") : CommonErrors
-object Forbidden : CommonErrors, ArticleErrors
+object Forbidden : CommonErrors
 
 sealed interface LoginErrors {
   object EmailUnknown : LoginErrors

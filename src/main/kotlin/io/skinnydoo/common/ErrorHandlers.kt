@@ -31,17 +31,21 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: UserError
   }
   is UserErrors.UserNotFound -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
-    call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
+    call.respond(HttpStatusCode.NotFound, errorBody)
   }
 }
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ArticleErrors) = when (error) {
   is ArticleErrors.ArticleNotFound -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf("Article with slug ${error.slug} does not exist")))
-    call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
+    call.respond(HttpStatusCode.NotFound, errorBody)
   }
   ArticleErrors.AuthorNotFound -> call.respond(HttpStatusCode.InternalServerError)
   Forbidden -> call.respond(HttpStatusCode.Unauthorized)
+  is ServerError -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
+    call.respond(HttpStatusCode.InternalServerError, errorBody)
+  }
 }
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: InvalidPropertyError) = when (error) {

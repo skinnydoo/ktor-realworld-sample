@@ -22,6 +22,10 @@ typealias GetAllArticlesUseCase =
 
 typealias GetFeedArticlesUseCase = suspend (UserId, Limit, Offset) -> Either<CommonErrors, List<Article>>
 
+typealias UpdateArticleUseCase = suspend (Slug, UpdateArticleDetails, UserId) -> Either<ArticleErrors, Article>
+
+typealias DeleteArticleUseCase = suspend (Slug, UserId) -> Either<ArticleErrors, Unit>
+
 fun addArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
@@ -49,3 +53,15 @@ fun getFeedArticlesUseCaseFactory(
 ): GetFeedArticlesUseCase = { userId, limit, offset ->
   withContext(dispatcher) { repository.feed(limit, offset, userId) }
 }
+
+fun updateArticleUseCaseFactory(
+  dispatcher: CoroutineDispatcher,
+  repository: ArticleRepository,
+): UpdateArticleUseCase = { slug, article, userId ->
+  withContext(dispatcher) { repository.updateArticle(slug, article, userId) }
+}
+
+fun deleteArticleUseCaseFactory(
+  dispatcher: CoroutineDispatcher,
+  repository: ArticleRepository,
+): DeleteArticleUseCase = { slug, userId -> withContext(dispatcher) { repository.deleteArticleWithSlug(slug, userId) } }

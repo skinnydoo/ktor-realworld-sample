@@ -6,10 +6,12 @@ import io.skinnydoo.articles.ArticleRepository
 import io.skinnydoo.articles.DefaultArticleRepository
 import io.skinnydoo.articles.addArticleUseCaseFactory
 import io.skinnydoo.articles.allArticlesUseCaseFactory
+import io.skinnydoo.articles.deleteArticleUseCaseFactory
 import io.skinnydoo.articles.getArticleWithSlugUseCaseFactory
 import io.skinnydoo.articles.getFeedArticlesUseCaseFactory
 import io.skinnydoo.articles.tags.DefaultTagRepository
 import io.skinnydoo.articles.tags.TagRepository
+import io.skinnydoo.articles.updateArticleUseCaseFactory
 import io.skinnydoo.profiles.DefaultProfileRepository
 import io.skinnydoo.profiles.ProfileRepository
 import io.skinnydoo.profiles.followUserUseCaseFactory
@@ -65,8 +67,10 @@ private val useCasesModule = module {
   single(named("followUser")) { followUserUseCaseFactory(get(IODispatcher), get()) }
   single(named("unfollowUser")) { unfollowUserUseCaseFactory(get(IODispatcher), get()) }
   single(named("addArticle")) { addArticleUseCaseFactory(get(IODispatcher), get()) }
+  single(named("updateArticle")) { updateArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("getArticle")) { getArticleWithSlugUseCaseFactory(get(IODispatcher), get()) }
   single(named("allArticles")) { allArticlesUseCaseFactory(get(IODispatcher), get()) }
+  single(named("deleteArticle")) { deleteArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("feed")) { getFeedArticlesUseCaseFactory(get(IODispatcher), get()) }
 }
 

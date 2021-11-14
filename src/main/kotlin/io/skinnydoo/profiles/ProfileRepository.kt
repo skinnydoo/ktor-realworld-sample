@@ -23,7 +23,7 @@ interface ProfileRepository {
   suspend fun followUser(userId: UserId, selfId: UserId): Either<UserErrors, Profile>
 
   suspend fun unfollowUser(username: Username, selfId: UserId): Either<UserErrors, Profile>
-  suspend fun isFollower(selfId: UserId, otherId: UserId): Boolean
+  suspend fun isFollowee(selfId: UserId, otherId: UserId): Boolean
 }
 
 class DefaultProfileRepository(private val userRepository: UserRepository) : ProfileRepository {
@@ -31,7 +31,7 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
   override suspend fun getUserProfile(userId: UserId, selfId: UserId?): Either<UserErrors, Profile> {
     return userRepository.userWithId(userId)
       .map { user ->
-        val isFollower = selfId?.let { isFollower(it, user.id) }.orFalse()
+        val isFollower = selfId?.let { isFollowee(it, user.id) }.orFalse()
         Profile.fromUser(user, isFollower)
       }
   }
@@ -41,7 +41,7 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
     selfId: UserId?,
   ): Either<UserErrors, Profile> = userRepository.userWithUsername(username)
     .map { user ->
-      val isFollower = selfId?.let { isFollower(it, user.id) }.orFalse()
+      val isFollower = selfId?.let { isFollowee(it, user.id) }.orFalse()
       Profile.fromUser(user, isFollower)
     }
 
@@ -80,7 +80,7 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
     }
   }
 
-  override suspend fun isFollower(selfId: UserId, otherId: UserId): Boolean = newSuspendedTransaction {
+  override suspend fun isFollowee(selfId: UserId, otherId: UserId): Boolean = newSuspendedTransaction {
     UserTable.innerJoin(FollowerTable, { id }, { userId }, { FollowerTable.followeeId eq otherId.value })
       .slice(UserTable.id)
       .select { UserTable.id eq selfId.value }

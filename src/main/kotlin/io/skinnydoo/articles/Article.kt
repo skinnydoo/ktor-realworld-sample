@@ -59,6 +59,16 @@ data class NewArticle(
 data class CreateArticleRequest(val article: NewArticle)
 
 @Serializable
+data class UpdateArticleDetails(
+  val title: String? = null,
+  val description: String? = null,
+  val body: String? = null,
+)
+
+@Serializable
+data class UpdateArticleRequest(val article: UpdateArticleDetails)
+
+@Serializable
 data class ArticleResponse(val article: Article)
 
 @Serializable
