@@ -7,6 +7,7 @@ import io.skinnydoo.articles.DefaultArticleRepository
 import io.skinnydoo.articles.addArticleUseCaseFactory
 import io.skinnydoo.articles.allArticlesUseCaseFactory
 import io.skinnydoo.articles.getArticleWithSlugUseCaseFactory
+import io.skinnydoo.articles.getFeedArticlesUseCaseFactory
 import io.skinnydoo.articles.tags.DefaultTagRepository
 import io.skinnydoo.articles.tags.TagRepository
 import io.skinnydoo.profiles.DefaultProfileRepository
@@ -66,6 +67,7 @@ private val useCasesModule = module {
   single(named("addArticle")) { addArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("getArticle")) { getArticleWithSlugUseCaseFactory(get(IODispatcher), get()) }
   single(named("allArticles")) { allArticlesUseCaseFactory(get(IODispatcher), get()) }
+  single(named("feed")) { getFeedArticlesUseCaseFactory(get(IODispatcher), get()) }
 }
 
 private val appModule = module {

@@ -19,6 +19,7 @@ import io.skinnydoo.common.Username
 import io.skinnydoo.common.orFalse
 import io.skinnydoo.profiles.Profile
 import io.skinnydoo.profiles.ProfileRepository
+import io.skinnydoo.users.FollowerTable
 import io.skinnydoo.users.UserTable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -44,9 +45,14 @@ interface ArticleRepository {
     author: Username? = null,
     favoritedBy: Username?,
     selfId: UserId? = null,
-    limit: Limit = Limit.DEFAULT,
-    offset: Offset = Offset.DEFAULT,
+    limit: Limit = Limit.default,
+    offset: Offset = Offset.default,
   ): Either<CommonErrors, List<Article>>
+
+  /**
+   * Get most recent articles from users you follow.
+   */
+  suspend fun feed(limit: Limit, offset: Offset, selfId: UserId): Either<CommonErrors, List<Article>>
 }
 
 class DefaultArticleRepository(
@@ -153,6 +159,33 @@ class DefaultArticleRepository(
           val favorited = selfId?.let { isFavoritedArticle(slug, it) }.orFalse()
 
           Article.fromRow(rr, profile = Profile.fromRow(rr, isFollower), tags, favoritesCount, favorited)
+        }
+    }.mapLeft { ServerError(it.localizedMessage) }
+  }
+
+  override suspend fun feed(
+    limit: Limit,
+    offset: Offset,
+    selfId: UserId,
+  ): Either<CommonErrors, List<Article>> = newSuspendedTransaction {
+    Either.catch {
+      val favoriteCount = FavoriteArticleTable.articleSlug.count().alias("favoriteCount")
+      ArticleTable
+        .leftJoin(FavoriteArticleTable, { slug }, { articleSlug })
+        .innerJoin(UserTable, { ArticleTable.authorId }, { id })
+        .innerJoin(FollowerTable, { ArticleTable.authorId }, { followeeId })
+        .slice(listOf(favoriteCount) + ArticleTable.columns + UserTable.columns)
+        .select { FollowerTable.userId eq selfId.value }
+        .limit(limit.value, offset.value.toLong())
+        .orderBy(ArticleTable.createAt to SortOrder.DESC)
+        .groupBy(ArticleTable.slug)
+        .map { rr ->
+          val slug = Slug(rr[ArticleTable.slug])
+          val tags = tagRepository.tagsForArticleWithSlug(slug)
+          val favoritesCount = rr[favoriteCount]
+          val favorited = isFavoritedArticle(slug, selfId).orFalse()
+
+          Article.fromRow(rr, profile = Profile.fromRow(rr, following = true), tags, favoritesCount, favorited)
         }
     }.mapLeft { ServerError(it.localizedMessage) }
   }

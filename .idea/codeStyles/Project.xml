@@ -20,6 +20,7 @@
       <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
       <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="1" />
+      <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
       <option name="WRAP_ON_TYPING" value="0" />
       <option name="arrangementSettings" />
       <option name="forceArrangeMenuAvailable" value="false" />
@@ -63,7 +64,7 @@
       <option name="SPECIAL_ELSE_IF_TREATMENT" value="true" />
       <option name="ALIGN_MULTILINE_CHAINED_METHODS" value="false" />
       <option name="ALIGN_MULTILINE_PARAMETERS" value="true" />
-      <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="false" />
+      <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
       <option name="ALIGN_MULTILINE_RESOURCES" value="true" />
       <option name="ALIGN_MULTILINE_FOR" value="true" />
       <option name="ALIGN_MULTILINE_BINARY_OPERATION" value="false" />

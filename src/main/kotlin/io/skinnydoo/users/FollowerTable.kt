@@ -13,10 +13,10 @@ object FollowerTable : Table(name = "user_followers") {
     onDelete = CASCADE,
     fkName = "fk_user_followers_user_id",
   )
-  val followerId = reference(
-    "follower_id",
+  val followeeId = reference(
+    "followee_id",
     UserTable,
     onDelete = CASCADE,
-    fkName = "fk_user_followers_follower_id",
+    fkName = "fk_user_followers_followee_id",
   )
 }

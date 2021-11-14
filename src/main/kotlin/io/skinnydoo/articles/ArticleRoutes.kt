@@ -44,11 +44,14 @@ data class ArticlesRoute(
 )
 
 @Location("$ARTICLES/feed")
-class ArticleFeedRoute
+data class ArticleFeedRoute(val limit: Int = 20, val offset: Int = 0)
 
 @Location("$ARTICLES/{slug}")
 data class ArticleRoute(val slug: String)
 
+/**
+ * Get most recent articles globally. Auth is optional.
+ */
 fun Route.allArticles() {
   val getAllArticles by inject<GetAllArticlesUseCase>(named("allArticles"))
 
@@ -59,8 +62,8 @@ fun Route.allArticles() {
       val tag = params.tag.ifEmpty { null }?.let(::Tag)
       val favoritedBy = params.favorited.ifEmpty { null }?.let(::Username)
       val username = params.author.ifEmpty { null }?.let(::Username)
-      val limit = Limit.fromInt(params.limit).getOrElse { Limit.DEFAULT }
-      val offset = Offset.fromInt(params.offset).getOrElse { Offset.DEFAULT }
+      val limit = Limit.fromInt(params.limit).getOrElse { Limit.default }
+      val offset = Offset.fromInt(params.offset).getOrElse { Offset.default }
 
       getAllArticles(selfId, tag, username, favoritedBy, limit, offset)
         .map { ArticleListResponse(it) }
@@ -69,6 +72,29 @@ fun Route.allArticles() {
   }
 }
 
+/**
+ * Get most recent articles from users you follow. Auth is required
+ */
+fun Route.articleFeed() {
+  val feedArticles by inject<GetFeedArticlesUseCase>(named("feed"))
+
+  authenticate("auth-jwt") {
+    get<ArticleFeedRoute> { params ->
+      val self = call.principal<User>()
+        ?: return@get call.respond(HttpStatusCode.Unauthorized, ErrorEnvelope(mapOf("body" to listOf("Unauthorized"))))
+
+      val limit = Limit.fromInt(params.limit).getOrElse { Limit.default }
+      val offset = Offset.fromInt(params.offset).getOrElse { Offset.default }
+      feedArticles(self.id, limit, offset)
+        .map { ArticleListResponse(it) }
+        .fold({ handleErrors(it) }, { call.respond(it) })
+    }
+  }
+}
+
+/**
+ * Create an article. Auth is required
+ */
 fun Route.createArticle() {
   val addArticle by inject<AddArticleUseCase>(named("addArticle"))
 
@@ -89,6 +115,9 @@ fun Route.createArticle() {
   }
 }
 
+/**
+ * Get an article. Auth is optional
+ */
 fun Route.getArticleWithSlug() {
   val getArticleWithSlug by inject<GetArticleWithSlugUseCase>(named("getArticle"))
 
@@ -113,6 +142,7 @@ fun Application.registerArticleRoutes() {
       createArticle()
       getArticleWithSlug()
       allArticles()
+      articleFeed()
     }
   }
 }

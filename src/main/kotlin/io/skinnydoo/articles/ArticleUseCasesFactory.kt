@@ -20,6 +20,8 @@ typealias GetArticleWithSlugUseCase = suspend (Slug, UserId?) -> Either<ArticleE
 typealias GetAllArticlesUseCase =
   suspend (UserId?, Tag?, Username?, favoritedBy: Username?, Limit, Offset) -> Either<CommonErrors, List<Article>>
 
+typealias GetFeedArticlesUseCase = suspend (UserId, Limit, Offset) -> Either<CommonErrors, List<Article>>
+
 fun addArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
@@ -39,4 +41,11 @@ fun allArticlesUseCaseFactory(
   repository: ArticleRepository,
 ): GetAllArticlesUseCase = { userId, tag, username, favorited, limit, offset ->
   withContext(dispatcher) { repository.allArticles(tag, username, favorited, userId, limit, offset) }
+}
+
+fun getFeedArticlesUseCaseFactory(
+  dispatcher: CoroutineDispatcher,
+  repository: ArticleRepository,
+): GetFeedArticlesUseCase = { userId, limit, offset ->
+  withContext(dispatcher) { repository.feed(limit, offset, userId) }
 }

@@ -8,9 +8,9 @@ import io.skinnydoo.common.orFalse
 import io.skinnydoo.users.FollowerTable
 import io.skinnydoo.users.UserRepository
 import io.skinnydoo.users.UserTable
-import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -67,7 +67,7 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
     newSuspendedTransaction {
       FollowerTable.insert {
         it[userId] = selfId.value
-        it[followerId] = otherId.value
+        it[followeeId] = otherId.value
       }
     }
   }
@@ -75,20 +75,13 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
   private suspend fun removeFollower(selfId: UserId, otherId: UserId) {
     newSuspendedTransaction {
       FollowerTable.deleteWhere {
-        FollowerTable.userId eq selfId.value and (FollowerTable.followerId eq otherId.value)
+        FollowerTable.userId eq selfId.value and (FollowerTable.followeeId eq otherId.value)
       }
     }
   }
 
   override suspend fun isFollower(selfId: UserId, otherId: UserId): Boolean = newSuspendedTransaction {
-    UserTable
-      .join(
-        FollowerTable,
-        JoinType.INNER,
-        onColumn = UserTable.id,
-        otherColumn = FollowerTable.userId,
-        additionalConstraint = { FollowerTable.followerId eq otherId.value }
-      )
+    UserTable.innerJoin(FollowerTable, { id }, { userId }, { FollowerTable.followeeId eq otherId.value })
       .slice(UserTable.id)
       .select { UserTable.id eq selfId.value }
       .empty()

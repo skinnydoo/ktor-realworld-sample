@@ -31,7 +31,7 @@ data class UserProfileRoute(val username: String)
 data class FollowUserRoute(val username: String)
 
 fun Route.getUserProfile() {
-  val getProfileForUser by inject<GetUserProfileUseCase>()
+  val getProfileForUser by inject<GetUserProfileUseCase>(named("getUserProfile"))
 
   authenticate("auth-jwt", optional = true) {
     get<UserProfileRoute> { params ->
