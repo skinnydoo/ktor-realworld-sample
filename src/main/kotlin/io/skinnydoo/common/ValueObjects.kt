@@ -12,8 +12,9 @@ value class UserId(val value: UUID) {
   override fun toString(): String = value.toString()
 
   companion object {
-    fun fromString(value: String): Option<UserId> =
-      Option.catch { UUID.fromString(value) }.map(::UserId)
+    fun fromString(value: String): Option<UserId> = Option.catch { UUID.fromString(value) }.map(::UserId)
+
+    fun fromUUID(value: UUID): UserId = UserId(value)
   }
 }
 

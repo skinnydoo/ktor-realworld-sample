@@ -4,7 +4,6 @@ import arrow.core.Either
 import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.UserId
 import io.skinnydoo.common.Username
-import io.skinnydoo.common.orFalse
 import io.skinnydoo.users.FollowerTable
 import io.skinnydoo.users.UserRepository
 import io.skinnydoo.users.UserTable
@@ -31,8 +30,8 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
   override suspend fun getUserProfile(userId: UserId, selfId: UserId?): Either<UserErrors, Profile> {
     return userRepository.userWithId(userId)
       .map { user ->
-        val isFollower = selfId?.let { isFollowee(it, user.id) }.orFalse()
-        Profile.fromUser(user, isFollower)
+        val following = selfId != null && isFollowee(selfId, user.id)
+        Profile.fromUser(user, following)
       }
   }
 
@@ -41,8 +40,8 @@ class DefaultProfileRepository(private val userRepository: UserRepository) : Pro
     selfId: UserId?,
   ): Either<UserErrors, Profile> = userRepository.userWithUsername(username)
     .map { user ->
-      val isFollower = selfId?.let { isFollowee(it, user.id) }.orFalse()
-      Profile.fromUser(user, isFollower)
+      val following = selfId != null && isFollowee(selfId, user.id)
+      Profile.fromUser(user, following)
     }
 
   override suspend fun followUser(userId: UserId, selfId: UserId): Either<UserErrors, Profile> {

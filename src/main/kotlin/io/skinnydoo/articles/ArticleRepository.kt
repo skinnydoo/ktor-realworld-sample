@@ -9,7 +9,6 @@ import io.skinnydoo.articles.tags.TagRepository
 import io.skinnydoo.articles.tags.TagTable
 import io.skinnydoo.common.ArticleErrors
 import io.skinnydoo.common.ArticleNotFound
-import io.skinnydoo.common.AuthorNotFound
 import io.skinnydoo.common.CommonErrors
 import io.skinnydoo.common.Forbidden
 import io.skinnydoo.common.Limit
@@ -93,11 +92,9 @@ class DefaultArticleRepository(
         }
 
         profileRepository.getUserProfile(UserId(rr[ArticleTable.authorId].value), userId)
-          .fold(
-            { Either.Left(ServerError()) },
-            { Article.fromRow(rr, profile = it, tags, favoritesCount = 0, favorited = false).right() }
-          )
-      } ?: Either.Left(ServerError())
+          .mapLeft { ServerError() }
+          .map { Article.fromRow(rr, profile = it, tags, favoritesCount = 0, favorited = false) }
+      } ?: ServerError().left()
     }
   }
 
@@ -119,14 +116,18 @@ class DefaultArticleRepository(
         if (details.description != null) rr[description] = details.description
       }
 
+      val favoriteCount = FavoriteArticleTable.articleSlug.count().alias("favoriteCount")
       ArticleTable
-        .innerJoin(UserTable, { authorId }, { id })
+        .leftJoin(FavoriteArticleTable, { ArticleTable.slug }, { articleSlug })
+        .innerJoin(UserTable, { ArticleTable.authorId }, { id })
+        .slice(listOf(favoriteCount) + ArticleTable.columns + UserTable.columns)
         .select { ArticleTable.slug eq slug.value }
+        .groupBy(ArticleTable.slug)
         .single()
         .let { rr ->
+          val favoritesCount = rr[favoriteCount]
           val tags = tagRepository.tagsForArticleWithSlug(slug)
           val favorited = isFavoritedArticle(slug, userId)
-          val favoritesCount = getFavoritesCount(slug)
           Article.fromRow(rr, profile = Profile.fromRow(rr, following = true), tags, favoritesCount, favorited)
         }
     }.mapLeft { ServerError(it.localizedMessage) }
@@ -136,20 +137,24 @@ class DefaultArticleRepository(
     slug: Slug,
     userId: UserId?,
   ): Either<ArticleErrors, Article> = newSuspendedTransaction {
-    val tags = tagRepository.tagsForArticleWithSlug(slug)
-    val favorited = userId?.let { isFavoritedArticle(slug, it) }.orFalse()
-    val favoritesCount = getFavoritesCount(slug)
-
+    val favoriteCount = FavoriteArticleTable.articleSlug.count().alias("favoriteCount")
     ArticleTable
+      .leftJoin(FavoriteArticleTable, { ArticleTable.slug }, { articleSlug })
+      .innerJoin(UserTable, { ArticleTable.authorId }, { id })
+      .slice(listOf(favoriteCount) + ArticleTable.columns + UserTable.columns)
       .select { ArticleTable.slug eq slug.value }
+      .groupBy(ArticleTable.slug)
       .singleOrNull()
       ?.let { rr ->
-        profileRepository
-          .getUserProfile(UserId(rr[ArticleTable.authorId].value), userId)
-          .fold(
-            { AuthorNotFound.left() },
-            { Article.fromRow(rr, profile = it, tags, favoritesCount, favorited).right() })
-      } ?: Either.Left(ArticleNotFound(slug))
+        val favoritesCount = rr[favoriteCount]
+        val tags = tagRepository.tagsForArticleWithSlug(slug)
+        val favorited = userId != null && isFavoritedArticle(slug, userId)
+
+        val authorId = UserId.fromUUID(rr[ArticleTable.authorId].value)
+        val following = userId != null && profileRepository.isFollowee(userId, authorId)
+
+        Article.fromRow(rr, profile = Profile.fromRow(rr, following), tags, favoritesCount, favorited).right()
+      } ?: ArticleNotFound(slug).left()
   }
 
   override suspend fun allArticles(
@@ -246,8 +251,4 @@ class DefaultArticleRepository(
     .select { FavoriteArticleTable.articleSlug eq slug.value and (FavoriteArticleTable.userId eq selfId.value) }
     .empty()
     .not()
-
-  private fun getFavoritesCount(slug: Slug): Long = FavoriteArticleTable
-    .select { FavoriteArticleTable.articleSlug eq slug.value }
-    .count()
 }

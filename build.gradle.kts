@@ -53,6 +53,7 @@ dependencies {
   implementation(Deps.logback)
 
   implementation("commons-validator:commons-validator:1.7")
+  implementation("com.auth0:java-jwt:3.18.2")
 
   testImplementation(Deps.Testing.serverTest)
   testImplementation(Deps.Testing.ktTest)

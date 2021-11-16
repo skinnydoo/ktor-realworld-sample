@@ -200,10 +200,10 @@ fun Application.registerArticleRoutes() {
     route(API_V1) {
       createArticle()
       getArticleWithSlug()
-      allArticles()
-      articleFeed()
       updateArticle()
       deleteArticle()
+      allArticles()
+      articleFeed()
     }
   }
 }
