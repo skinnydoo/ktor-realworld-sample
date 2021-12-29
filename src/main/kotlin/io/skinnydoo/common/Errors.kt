@@ -5,6 +5,7 @@ typealias UserExists = UserErrors.UserAlreadyExist
 
 typealias ArticleNotFound = ArticleErrors.ArticleNotFound
 typealias AuthorNotFound = ArticleErrors.AuthorNotFound
+typealias CommentNotFound = ArticleErrors.CommentNotFound
 
 typealias InvalidSlug = InvalidPropertyError.SlugInvalid
 
@@ -25,6 +26,7 @@ sealed interface UserErrors {
 sealed interface ArticleErrors {
   data class ArticleNotFound(val slug: Slug) : ArticleErrors
   object AuthorNotFound : ArticleErrors
+  data class CommentNotFound(val commentId: CommentId) : ArticleErrors
 }
 
 sealed class InvalidPropertyError {

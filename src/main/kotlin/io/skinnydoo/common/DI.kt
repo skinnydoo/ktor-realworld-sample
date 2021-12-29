@@ -6,6 +6,8 @@ import io.skinnydoo.articles.ArticleRepository
 import io.skinnydoo.articles.DefaultArticleRepository
 import io.skinnydoo.articles.addArticleUseCaseFactory
 import io.skinnydoo.articles.allArticlesUseCaseFactory
+import io.skinnydoo.articles.comments.CommentRepository
+import io.skinnydoo.articles.comments.DefaultCommentRepository
 import io.skinnydoo.articles.deleteArticleUseCaseFactory
 import io.skinnydoo.articles.getArticleWithSlugUseCaseFactory
 import io.skinnydoo.articles.getFeedArticlesUseCaseFactory
@@ -50,6 +52,7 @@ private val repositoryModule = module {
   single { DefaultProfileRepository(get()) } bind ProfileRepository::class
   single { DefaultArticleRepository(get(), get()) } bind ArticleRepository::class
   single { DefaultTagRepository() } bind TagRepository::class
+  single { DefaultCommentRepository(get()) } bind CommentRepository::class
 }
 
 private val coroutinesModule = module {
@@ -82,10 +85,7 @@ private val appModule = module {
     Json {
       encodeDefaults = true
       isLenient = true
-      allowSpecialFloatingPointValues = true
-      allowStructuredMapKeys = true
       prettyPrint = false
-      useArrayPolymorphism = true
       coerceInputValues = true
     }
   }

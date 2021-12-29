@@ -46,6 +46,10 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ArticleEr
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.InternalServerError, errorBody)
   }
+  is ArticleErrors.CommentNotFound -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Comment with id ${error.commentId} does not exist")))
+    call.respond(HttpStatusCode.NotFound, errorBody)
+  }
 }
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: InvalidPropertyError) = when (error) {

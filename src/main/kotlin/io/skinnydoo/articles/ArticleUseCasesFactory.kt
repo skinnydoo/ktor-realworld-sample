@@ -29,8 +29,8 @@ typealias DeleteArticleUseCase = suspend (Slug, UserId) -> Either<ArticleErrors,
 fun addArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
-): AddArticleUseCase = { article, selfId ->
-  withContext(dispatcher) { repository.addArticle(article, selfId) }
+): AddArticleUseCase = { article, userId ->
+  withContext(dispatcher) { repository.addArticle(article, userId) }
 }
 
 fun getArticleWithSlugUseCaseFactory(

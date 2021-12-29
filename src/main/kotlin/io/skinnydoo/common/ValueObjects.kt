@@ -31,6 +31,13 @@ value class Slug(val value: UUID) {
 
 @JvmInline
 @Serializable
+value class CommentId(val value: Int) {
+
+  override fun toString(): String = value.toString()
+}
+
+@JvmInline
+@Serializable
 value class Email(val value: String)
 
 @JvmInline

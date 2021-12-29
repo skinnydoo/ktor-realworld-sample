@@ -1,11 +1,11 @@
 package io.skinnydoo.articles
 
 import io.skinnydoo.articles.tags.TagTable
-import io.skinnydoo.common.now
 import io.skinnydoo.users.UserTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.`java-time`.CurrentDateTime
 import org.jetbrains.exposed.sql.`java-time`.datetime
 import java.time.LocalDateTime
 import java.util.UUID
@@ -16,8 +16,8 @@ object ArticleTable : Table(name = "articles") {
   val description = varchar("description", 140).default("")
   val body = text("body")
   val authorId = reference("author_id", UserTable)
-  val createAt: Column<LocalDateTime> = datetime("created_at").default(now())
-  val updatedAt = datetime("updated_at").default(now())
+  val createAt: Column<LocalDateTime> = datetime("created_at").defaultExpression(CurrentDateTime())
+  val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime())
 
   override val primaryKey by lazy { PrimaryKey(slug) }
 }
