@@ -26,7 +26,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 
 interface CommentRepository {
   suspend fun comments(slug: Slug, userId: UserId?): Either<ArticleErrors, List<Comment>>
-  suspend fun add(slug: Slug, comment: String, userId: UserId): Either<ArticleErrors, Comment>
+  suspend fun add(slug: Slug, comment: NewComment, userId: UserId): Either<ArticleErrors, Comment>
   suspend fun remove(slug: Slug, commentId: CommentId, userId: UserId): Either<ArticleErrors, Unit>
 }
 
@@ -55,14 +55,14 @@ class DefaultCommentRepository(
 
   override suspend fun add(
     slug: Slug,
-    comment: String,
+    comment: NewComment,
     userId: UserId,
   ): Either<ArticleErrors, Comment> = newSuspendedTransaction {
     ArticleTable.select { ArticleTable.slug eq slug.value }.singleOrNull()
       ?: return@newSuspendedTransaction ArticleNotFound(slug).left()
 
     val stmt = CommentTable.insert {
-      it[CommentTable.comment] = comment
+      it[CommentTable.comment] = comment.text
       it[authorId] = userId.value
       it[articleSlug] = slug.value
     }

@@ -8,11 +8,15 @@ import io.skinnydoo.articles.addArticleUseCaseFactory
 import io.skinnydoo.articles.allArticlesUseCaseFactory
 import io.skinnydoo.articles.comments.CommentRepository
 import io.skinnydoo.articles.comments.DefaultCommentRepository
+import io.skinnydoo.articles.comments.addCommentsForArticleUseCaseFactory
+import io.skinnydoo.articles.comments.getCommentsForArticleUseCaseFactory
+import io.skinnydoo.articles.comments.removeCommentFromArticleUseCaseFactory
 import io.skinnydoo.articles.deleteArticleUseCaseFactory
 import io.skinnydoo.articles.getArticleWithSlugUseCaseFactory
 import io.skinnydoo.articles.getFeedArticlesUseCaseFactory
 import io.skinnydoo.articles.tags.DefaultTagRepository
 import io.skinnydoo.articles.tags.TagRepository
+import io.skinnydoo.articles.tags.getAllTagsUseCaseFactory
 import io.skinnydoo.articles.updateArticleUseCaseFactory
 import io.skinnydoo.profiles.DefaultProfileRepository
 import io.skinnydoo.profiles.ProfileRepository
@@ -75,6 +79,12 @@ private val useCasesModule = module {
   single(named("allArticles")) { allArticlesUseCaseFactory(get(IODispatcher), get()) }
   single(named("deleteArticle")) { deleteArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("feed")) { getFeedArticlesUseCaseFactory(get(IODispatcher), get()) }
+
+  single(named("commentsForArticle")) { getCommentsForArticleUseCaseFactory(get(IODispatcher), get()) }
+  single(named("addComments")) { addCommentsForArticleUseCaseFactory(get(IODispatcher), get()) }
+  single(named("removeComments")) { removeCommentFromArticleUseCaseFactory(get(IODispatcher), get()) }
+
+  single(named("tags")) { getAllTagsUseCaseFactory(get(IODispatcher), get()) }
 }
 
 private val appModule = module {

@@ -8,9 +8,9 @@ import io.skinnydoo.common.UserId
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-typealias GetCommentsForArticleUseCase = suspend (Slug, UserId) -> Either<ArticleErrors, List<Comment>>
+typealias GetCommentsForArticleUseCase = suspend (Slug, UserId?) -> Either<ArticleErrors, List<Comment>>
 
-typealias AddCommentForArticleUseCase = suspend (Slug, UserId, text: String) -> Either<ArticleErrors, Comment>
+typealias AddCommentForArticleUseCase = suspend (Slug, UserId, comment: NewComment) -> Either<ArticleErrors, Comment>
 
 typealias RemoveCommentFromArticleUseCase = suspend (Slug, UserId, CommentId) -> Either<ArticleErrors, Unit>
 

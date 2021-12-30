@@ -12,7 +12,9 @@ import io.ktor.features.StatusPages
 import io.ktor.locations.Locations
 import io.ktor.request.path
 import io.ktor.serialization.json
+import io.skinnydoo.articles.comments.registerCommentRoutes
 import io.skinnydoo.articles.registerArticleRoutes
+import io.skinnydoo.articles.tags.registerTagsRoutes
 import io.skinnydoo.common.DatabaseFactory
 import io.skinnydoo.common.JwtService
 import io.skinnydoo.common.UserId
@@ -72,4 +74,6 @@ fun Application.module() {
   registerUserRoutes()
   registerProfileRoutes()
   registerArticleRoutes()
+  registerCommentRoutes()
+  registerTagsRoutes()
 }

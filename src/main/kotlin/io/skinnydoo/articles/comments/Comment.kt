@@ -2,6 +2,7 @@ package io.skinnydoo.articles.comments
 
 import io.skinnydoo.common.serializers.LocalDateTimeSerializer
 import io.skinnydoo.profiles.Profile
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.LocalDateTime
@@ -31,4 +32,13 @@ data class Comment(
 }
 
 @Serializable
+data class NewComment(@SerialName("body") val text: String)
+
+@Serializable
+data class CreateCommentRequest(val comment: NewComment)
+
+@Serializable
 data class CommentResponse(val comment: Comment)
+
+@Serializable
+data class CommentsResponse(val comments: List<Comment>)

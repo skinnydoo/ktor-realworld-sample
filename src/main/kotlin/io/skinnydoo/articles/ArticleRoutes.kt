@@ -34,7 +34,7 @@ import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
 import java.util.UUID
 
-private const val ARTICLES = "/articles"
+const val ARTICLES = "/articles"
 
 @Location(ARTICLES)
 data class ArticlesRoute(

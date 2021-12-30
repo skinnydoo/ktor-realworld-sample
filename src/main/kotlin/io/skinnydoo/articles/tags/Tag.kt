@@ -13,3 +13,6 @@ value class Tag(val value: String) {
 @JvmInline
 @Serializable
 value class TagId(val value: Long)
+
+@Serializable
+data class TagsResponse(val tags: List<Tag>)

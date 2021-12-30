@@ -82,6 +82,7 @@ tasks.withType<KotlinCompile>().configureEach {
     freeCompilerArgs = freeCompilerArgs + listOf(
       "-Xopt-in=kotlin.RequiresOptIn",
       "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
+      "-Xopt-in=io.ktor.locations.KtorExperimentalLocationsAPI",
     )
   }
 }
