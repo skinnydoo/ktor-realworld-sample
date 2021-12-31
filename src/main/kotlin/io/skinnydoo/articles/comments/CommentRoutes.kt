@@ -58,7 +58,10 @@ fun Route.addCommentForArticle() {
   authenticate("auth-jwt") {
     post<CommentsRoute> { params ->
       val userId = call.principal<User>()?.id
-        ?: return@post call.respond(HttpStatusCode.Unauthorized, ErrorEnvelope(mapOf("body" to listOf("Unauthorized"))))
+        ?: return@post call.respond(
+          HttpStatusCode.Unauthorized,
+          ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
+        )
 
       val body = call.receive<CreateCommentRequest>()
 
@@ -79,8 +82,10 @@ fun Route.removeCommentForArticle() {
   authenticate("auth-jwt") {
     delete<CommentRoute> { params ->
       val userId = call.principal<User>()?.id
-        ?: return@delete call.respond(HttpStatusCode.Unauthorized,
-                                      ErrorEnvelope(mapOf("body" to listOf("Unauthorized"))))
+        ?: return@delete call.respond(
+          HttpStatusCode.Unauthorized,
+          ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
+        )
 
       Either.catch { Slug(UUID.fromString(params.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }

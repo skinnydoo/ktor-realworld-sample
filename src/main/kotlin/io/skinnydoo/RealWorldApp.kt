@@ -60,13 +60,15 @@ fun Application.module() {
       authSchemes("Token")
       verifier(jwtService.verifier)
       validate { credential ->
-        val claim = credential.payload.getClaim("id").asString()
-        claim?.let { id ->
-          UserId.fromString(id)
-            .toEither { null }
-            .flatMap { getUserWithId(it) }
-            .orNull()
-        }
+        credential.payload
+          .getClaim("id")
+          .asString()
+          ?.let { id ->
+            UserId.fromString(id)
+              .toEither { null }
+              .flatMap { getUserWithId(it) }
+              .orNull()
+          }
       }
     }
   }

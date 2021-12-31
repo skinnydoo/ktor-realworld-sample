@@ -16,13 +16,16 @@ import io.skinnydoo.common.orFalse
 import io.skinnydoo.profiles.Profile
 import io.skinnydoo.profiles.ProfileRepository
 import io.skinnydoo.users.UserTable
+import mu.KotlinLogging
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.innerJoin
-import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+
+private val logger = KotlinLogging.logger {}
 
 interface CommentRepository {
   suspend fun comments(slug: Slug, userId: UserId?): Either<ArticleErrors, List<Comment>>
@@ -61,13 +64,16 @@ class DefaultCommentRepository(
     ArticleTable.select { ArticleTable.slug eq slug.value }.singleOrNull()
       ?: return@newSuspendedTransaction ArticleNotFound(slug).left()
 
-    val stmt = CommentTable.insert {
+    val id = CommentTable.insertAndGetId {
       it[CommentTable.comment] = comment.text
       it[authorId] = userId.value
       it[articleSlug] = slug.value
     }
 
-    val rr = stmt.resultedValues?.singleOrNull() ?: return@newSuspendedTransaction ServerError().left()
+    val rr = CommentTable.select { CommentTable.id eq id }.singleOrNull()
+      ?: return@newSuspendedTransaction ServerError().left()
+
+    logger.info { "Successfully create new comment [RecordID: ${rr[CommentTable.id].value}]" }
 
     val authorId = UserId.fromUUID(rr[CommentTable.authorId].value)
     profileRepository.getUserProfile(authorId, userId)
@@ -89,6 +95,7 @@ class DefaultCommentRepository(
     if (rr[CommentTable.authorId].value != userId.value) return@newSuspendedTransaction Forbidden.left()
 
     CommentTable.deleteWhere { CommentTable.id eq commentId.value }
+    logger.info { "Successfully remove comment with [RecordID: $commentId]" }
     Either.Right(Unit)
   }
 }

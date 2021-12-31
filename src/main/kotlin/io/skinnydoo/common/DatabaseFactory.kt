@@ -8,16 +8,20 @@ import io.skinnydoo.articles.ArticleTagTable
 import io.skinnydoo.articles.FavoriteArticleTable
 import io.skinnydoo.articles.comments.CommentTable
 import io.skinnydoo.articles.tags.TagTable
+import io.skinnydoo.common.logging.KotlinLoggingSqlLogger
 import io.skinnydoo.users.FollowerTable
 import io.skinnydoo.users.UserTable
+import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.DatabaseConfig
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import kotlin.time.Duration.Companion.milliseconds
+
+private val logger = KotlinLogging.logger {}
 
 interface DatabaseFactory {
   fun init(drop: Boolean = false)
@@ -46,17 +50,22 @@ class DefaultDatabaseFactory(private val dbConfig: DBConfig) : DatabaseFactory {
   )
 
   override fun init(drop: Boolean) {
-    Database.connect(hikari()).apply {
+    logger.info { "Initializing DB connection" }
+
+    val dbConfig = DatabaseConfig {
+      sqlLogger = KotlinLoggingSqlLogger
       useNestedTransactions = true
+      warnLongQueriesDuration = 50.milliseconds.inWholeMilliseconds
     }
+    Database.connect(hikari(), databaseConfig = dbConfig)
 
     transaction {
-      addLogger(StdOutSqlLogger)
       if (drop) {
         transaction { SchemaUtils.drop(*tables) }
       }
       SchemaUtils.create(*tables)
     }
+    logger.info { "DB initialization complete" }
   }
 
   override suspend fun drop() {

@@ -5,8 +5,8 @@ import io.skinnydoo.users.UserTable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ReferenceOption.CASCADE
-import org.jetbrains.exposed.sql.`java-time`.CurrentDateTime
-import org.jetbrains.exposed.sql.`java-time`.datetime
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
 object CommentTable : IntIdTable(name = "comments") {
@@ -20,6 +20,7 @@ object CommentTable : IntIdTable(name = "comments") {
   val articleSlug = reference(
     "article_slug",
     ArticleTable.slug,
+    onDelete = CASCADE,
     fkName = "fk_comments_article_slug"
   )
   val createAt: Column<LocalDateTime> = datetime("created_at").defaultExpression(CurrentDateTime())

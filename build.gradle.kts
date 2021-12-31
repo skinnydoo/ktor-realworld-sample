@@ -48,9 +48,8 @@ dependencies {
   implementation(Deps.jbcrypt)
   implementation(Deps.hikaricp)
   implementation(Deps.logback)
+  implementation(Deps.kotlinLogging)
   implementation(Deps.mysqlConnector)
-
-  implementation(Deps.logback)
 
   implementation("commons-validator:commons-validator:1.7")
   implementation("com.auth0:java-jwt:3.18.2")
@@ -83,6 +82,7 @@ tasks.withType<KotlinCompile>().configureEach {
       "-Xopt-in=kotlin.RequiresOptIn",
       "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
       "-Xopt-in=io.ktor.locations.KtorExperimentalLocationsAPI",
+      "-Xopt-in=kotlin.time.ExperimentalTime",
     )
   }
 }

@@ -25,6 +25,7 @@ import io.skinnydoo.users.UserTable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import mu.KotlinLogging
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
@@ -39,6 +40,8 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
+
+private val logger = KotlinLogging.logger {}
 
 interface ArticleRepository {
   suspend fun addArticle(article: NewArticle, userId: UserId): Either<ServerError, Article>
@@ -77,24 +80,26 @@ class DefaultArticleRepository(
       .unzip()
 
     newSuspendedTransaction {
-      val stmt = ArticleTable.insert {
+      val slug = ArticleTable.insert {
         it[title] = article.title
         it[description] = article.description
         it[body] = article.body
         it[authorId] = userId.value
+      } get ArticleTable.slug
+
+      val rr = ArticleTable.select { ArticleTable.slug eq slug }.singleOrNull()
+        ?: return@newSuspendedTransaction ServerError().left()
+
+      logger.info { "Successfully create new Article [RecordID: $slug]" }
+
+      ArticleTagTable.batchInsert(tagIds, shouldReturnGeneratedValues = false) { tagId ->
+        this[ArticleTagTable.articleSlug] = slug
+        this[ArticleTagTable.tagId] = tagId.value
       }
 
-      stmt.resultedValues?.firstOrNull()?.let { rr ->
-        val slug = rr[slug]
-        ArticleTagTable.batchInsert(tagIds, shouldReturnGeneratedValues = false) { tagId ->
-          this[ArticleTagTable.articleSlug] = slug
-          this[ArticleTagTable.tagId] = tagId.value
-        }
-
-        profileRepository.getUserProfile(UserId(rr[ArticleTable.authorId].value), userId)
-          .mapLeft { ServerError() }
-          .map { Article.fromRow(rr, profile = it, tags, favoritesCount = 0, favorited = false) }
-      } ?: ServerError().left()
+      profileRepository.getUserProfile(UserId(rr[ArticleTable.authorId].value), userId)
+        .mapLeft { ServerError() }
+        .map { Article.fromRow(rr, profile = it, tags, favoritesCount = 0, favorited = false) }
     }
   }
 

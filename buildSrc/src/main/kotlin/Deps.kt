@@ -1,6 +1,7 @@
 object Deps {
 
   const val logback = "ch.qos.logback:logback-classic:${Versions.logback}"
+  const val kotlinLogging = "io.github.microutils:kotlin-logging-jvm:${Versions.kotlinLogging}"
   const val mysqlConnector = "mysql:mysql-connector-java:${Versions.mysqlConnector}"
   const val hikaricp = "com.zaxxer:HikariCP:${Versions.hikaricp}"
   const val jbcrypt = "org.mindrot:jbcrypt:${Versions.jbcrypt}"
