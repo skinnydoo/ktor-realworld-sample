@@ -16,8 +16,6 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.DatabaseConfig
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -25,8 +23,6 @@ private val logger = KotlinLogging.logger {}
 
 interface DatabaseFactory {
   fun init(drop: Boolean = false)
-
-  suspend fun <T> query(block: suspend Transaction.() -> T): T = newSuspendedTransaction { block() }
   suspend fun drop()
 }
 
@@ -37,7 +33,10 @@ data class DBConfig(
   val password: String,
 )
 
-class DefaultDatabaseFactory(private val dbConfig: DBConfig) : DatabaseFactory {
+class DefaultDatabaseFactory(
+  private val dbConfig: DBConfig,
+  private val transactionRunner: DatabaseTransactionRunner,
+) : DatabaseFactory {
 
   private val tables: Array<Table> = arrayOf(
     UserTable,
@@ -69,7 +68,7 @@ class DefaultDatabaseFactory(private val dbConfig: DBConfig) : DatabaseFactory {
   }
 
   override suspend fun drop() {
-    query { SchemaUtils.drop(*tables) }
+    transactionRunner { SchemaUtils.drop(*tables) }
   }
 
   private fun hikari(): HikariDataSource {

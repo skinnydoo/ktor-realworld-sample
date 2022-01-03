@@ -8,14 +8,8 @@ import io.skinnydoo.common.LoginErrors
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.UserExists
-import io.skinnydoo.common.UserId
 import io.skinnydoo.common.Username
 import io.skinnydoo.common.checkPassword
-import io.skinnydoo.profiles.ProfileRepository
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.or
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 interface AuthRepository {
   suspend fun register(username: Username, email: Email, password: Password): Either<UserErrors, User>
@@ -23,42 +17,31 @@ interface AuthRepository {
 }
 
 class DefaultAuthRepository(
-  private val userRepository: UserRepository,
-  private val profileRepository: ProfileRepository,
+  private val userDao: UserDao,
+  private val userFollowerDao: UserFollowerDao,
 ) : AuthRepository {
 
   override suspend fun register(
     username: Username,
     email: Email,
     password: Password,
-  ): Either<UserErrors, User> = newSuspendedTransaction {
-    val userExists = UserTable
-      .select { UserTable.username eq username.value or (UserTable.email eq email.value) }
-      .firstOrNull() != null
-
-    if (userExists) {
-      Either.Left(UserExists())
-    } else {
-      val id = UserTable.insertAndGetId {
-        it[UserTable.username] = username.value
-        it[UserTable.email] = email.value
-        it[UserTable.password] = password.value
-      }.let { UserId(it.value) }
-
-      profileRepository.followUser(id, id) // self follower
-
-      val user = UserTable.select { UserTable.id eq id.value }.map(User.Companion::fromRow).single()
-      Either.Right(user)
-    }
+  ): Either<UserErrors, User> = if (userDao.userExist(username, email)) {
+    UserExists().left()
+  } else {
+    val id = userDao.createFor(username, email, password)
+    userFollowerDao.insert(id, id) // self follower
+    userDao.userWithId(id).right()
   }
 
-  override suspend fun login(email: Email, password: Password): Either<LoginErrors, User> {
-    return when (val result = userRepository.userWithEmail(email)) {
-      is Either.Right -> {
-        if (checkPassword(password.value, result.value.password)) result.value.right()
-        else LoginErrors.PasswordInvalid.left()
+  override suspend fun login(
+    email: Email,
+    password: Password,
+  ): Either<LoginErrors, User> = userDao.userWithEmail(email)
+    ?.let { user ->
+      if (checkPassword(password.value, user.password)) {
+        user.right()
+      } else {
+        LoginErrors.PasswordInvalid.left()
       }
-      is Either.Left -> LoginErrors.EmailUnknown.left()
-    }
-  }
+    } ?: LoginErrors.EmailUnknown.left()
 }

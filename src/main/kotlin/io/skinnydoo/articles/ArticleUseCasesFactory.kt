@@ -2,14 +2,7 @@ package io.skinnydoo.articles
 
 import arrow.core.Either
 import io.skinnydoo.articles.tags.Tag
-import io.skinnydoo.common.ArticleErrors
-import io.skinnydoo.common.CommonErrors
-import io.skinnydoo.common.Limit
-import io.skinnydoo.common.Offset
-import io.skinnydoo.common.ServerError
-import io.skinnydoo.common.Slug
-import io.skinnydoo.common.UserId
-import io.skinnydoo.common.Username
+import io.skinnydoo.common.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -30,21 +23,21 @@ fun addArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
 ): AddArticleUseCase = { article, userId ->
-  withContext(dispatcher) { repository.addArticle(article, userId) }
+  withContext(dispatcher) { repository.add(article, userId) }
 }
 
 fun getArticleWithSlugUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
 ): GetArticleWithSlugUseCase = { slug, userId ->
-  withContext(dispatcher) { repository.articleWithSlug(slug, userId) }
+  withContext(dispatcher) { repository.get(slug, userId) }
 }
 
 fun allArticlesUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
 ): GetAllArticlesUseCase = { userId, tag, username, favorited, limit, offset ->
-  withContext(dispatcher) { repository.allArticles(tag, username, favorited, userId, limit, offset) }
+  withContext(dispatcher) { repository.getArticlesFilterBy(tag, username, favorited, userId, limit, offset) }
 }
 
 fun getFeedArticlesUseCaseFactory(
@@ -64,4 +57,4 @@ fun updateArticleUseCaseFactory(
 fun deleteArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
-): DeleteArticleUseCase = { slug, userId -> withContext(dispatcher) { repository.deleteArticleWithSlug(slug, userId) } }
+): DeleteArticleUseCase = { slug, userId -> withContext(dispatcher) { repository.remove(slug, userId) } }

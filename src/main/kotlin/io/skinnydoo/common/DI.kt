@@ -2,35 +2,11 @@
 
 package io.skinnydoo.common
 
-import io.skinnydoo.articles.ArticleRepository
-import io.skinnydoo.articles.DefaultArticleRepository
-import io.skinnydoo.articles.addArticleUseCaseFactory
-import io.skinnydoo.articles.allArticlesUseCaseFactory
-import io.skinnydoo.articles.comments.CommentRepository
-import io.skinnydoo.articles.comments.DefaultCommentRepository
-import io.skinnydoo.articles.comments.addCommentsForArticleUseCaseFactory
-import io.skinnydoo.articles.comments.getCommentsForArticleUseCaseFactory
-import io.skinnydoo.articles.comments.removeCommentFromArticleUseCaseFactory
-import io.skinnydoo.articles.deleteArticleUseCaseFactory
-import io.skinnydoo.articles.getArticleWithSlugUseCaseFactory
-import io.skinnydoo.articles.getFeedArticlesUseCaseFactory
-import io.skinnydoo.articles.tags.DefaultTagRepository
-import io.skinnydoo.articles.tags.TagRepository
-import io.skinnydoo.articles.tags.getAllTagsUseCaseFactory
-import io.skinnydoo.articles.updateArticleUseCaseFactory
-import io.skinnydoo.profiles.DefaultProfileRepository
-import io.skinnydoo.profiles.ProfileRepository
-import io.skinnydoo.profiles.followUserUseCaseFactory
-import io.skinnydoo.profiles.getUserProfileUseCaseFactory
-import io.skinnydoo.profiles.unfollowUserUseCaseFactory
-import io.skinnydoo.users.AuthRepository
-import io.skinnydoo.users.DefaultAuthRepository
-import io.skinnydoo.users.DefaultUserRepository
-import io.skinnydoo.users.UserRepository
-import io.skinnydoo.users.getUserWithIdUseCaseFactory
-import io.skinnydoo.users.loginUserUseCaseFactory
-import io.skinnydoo.users.registerUserUseCaseFactory
-import io.skinnydoo.users.updateUserUseCaseFactory
+import io.skinnydoo.articles.*
+import io.skinnydoo.articles.comments.*
+import io.skinnydoo.articles.tags.*
+import io.skinnydoo.profiles.*
+import io.skinnydoo.users.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
@@ -40,7 +16,6 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import org.koin.dsl.single
 import org.koin.logger.SLF4JLogger
 
 fun KoinApplication.configure() {
@@ -48,15 +23,15 @@ fun KoinApplication.configure() {
   modules(koinModules())
 }
 
-fun koinModules(): List<Module> = listOf(appModule, repositoryModule, coroutinesModule, useCasesModule)
+fun koinModules(): List<Module> = listOf(appModule, databaseModule, repositoryModule, coroutinesModule, useCasesModule)
 
 private val repositoryModule = module {
-  single<DefaultUserRepository>() bind UserRepository::class
+  single { DefaultUserRepository(get()) } bind UserRepository::class
   single { DefaultAuthRepository(get(), get()) } bind AuthRepository::class
-  single { DefaultProfileRepository(get()) } bind ProfileRepository::class
-  single { DefaultArticleRepository(get(), get()) } bind ArticleRepository::class
-  single { DefaultTagRepository() } bind TagRepository::class
-  single { DefaultCommentRepository(get()) } bind CommentRepository::class
+  single { DefaultProfileRepository(get(), get()) } bind ProfileRepository::class
+  single { DefaultArticleRepository(get(), get(), get()) } bind ArticleRepository::class
+  single { DefaultTagRepository(get()) } bind TagRepository::class
+  single { DefaultCommentRepository(get(), get()) } bind CommentRepository::class
 }
 
 private val coroutinesModule = module {
@@ -88,7 +63,7 @@ private val useCasesModule = module {
 }
 
 private val appModule = module {
-  single { params -> DefaultDatabaseFactory(dbConfig = params.get()) } bind DatabaseFactory::class
+  single { params -> DefaultDatabaseFactory(dbConfig = params.get(), get()) } bind DatabaseFactory::class
   single { params -> JwtService(jwtConfig = params.get()) }
 
   single {
@@ -99,4 +74,14 @@ private val appModule = module {
       coerceInputValues = true
     }
   }
+}
+
+private val databaseModule = module {
+  single { ExposedTransactionRunner(get(IODispatcher)) } bind DatabaseTransactionRunner::class
+  single { DefaultUserDao(get()) } bind UserDao::class
+  single { DefaultUserFollowerDao(get()) } bind UserFollowerDao::class
+  single { DefaultArticleDao(get(), get(), get()) } bind ArticleDao::class
+  single { DefaultArticleTagDao(get()) } bind ArticleTagDao::class
+  single { DefaultTagDao(get()) } bind TagDao::class
+  single { DefaultCommentsDao(get(), get()) } bind CommentsDao::class
 }

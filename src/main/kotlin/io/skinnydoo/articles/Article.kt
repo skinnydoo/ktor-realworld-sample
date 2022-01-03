@@ -26,7 +26,7 @@ data class Article(
   companion object {
     fun fromRow(
       rr: ResultRow,
-      profile: Profile,
+      author: Profile,
       tags: List<Tag>,
       favoritesCount: Long,
       favorited: Boolean,
@@ -39,7 +39,7 @@ data class Article(
         tagList = tags,
         favoritesCount = favoritesCount,
         favorited = favorited,
-        author = profile,
+        author = author,
         createdAt = rr[ArticleTable.createAt],
         updatedAt = rr[ArticleTable.updatedAt]
       )

@@ -1,9 +1,13 @@
 package io.skinnydoo.common
 
+import arrow.core.identity
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.application.ApplicationEnvironment
+import io.ktor.auth.Authentication
+import io.ktor.auth.Principal
+import io.ktor.auth.jwt.jwt
 import io.skinnydoo.users.User
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Duration
@@ -50,4 +54,18 @@ fun ApplicationEnvironment.jwtConfig(path: String): JWTConfig = with(config.conf
     secret = property("secret").getString(),
     validity = Duration.ofMillis(property("validity_ms").getString().toLong())
   )
+}
+
+fun Authentication.Configuration.configure(jwtService: JwtService, validate: suspend (UserId) -> Principal?) {
+  jwt(name = "auth-jwt") {
+    realm = jwtService.realm
+    authSchemes("Token")
+    verifier(jwtService.verifier)
+    this.validate { credential ->
+      credential.payload
+        .getClaim("id")
+        .asString()
+        ?.let { id -> UserId.fromString(id).toEither { null }.fold(::identity) { validate(it) } }
+    }
+  }
 }

@@ -10,4 +10,4 @@ typealias GetTags = suspend () -> Either<ServerError, List<Tag>>
 fun getAllTagsUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: TagRepository,
-): GetTags = { withContext(dispatcher) { repository.allTags() } }
+): GetTags = { withContext(dispatcher) { repository.getTags() } }

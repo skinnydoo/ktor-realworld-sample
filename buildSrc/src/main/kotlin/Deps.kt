@@ -6,6 +6,7 @@ object Deps {
   const val hikaricp = "com.zaxxer:HikariCP:${Versions.hikaricp}"
   const val jbcrypt = "org.mindrot:jbcrypt:${Versions.jbcrypt}"
   const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationJson}"
+  const val scientist = "com.github.spoptchev:scientist:${Versions.scientist}"
 
   object Arrow {
     const val stack = "io.arrow-kt:arrow-stack:${Versions.arrow}"

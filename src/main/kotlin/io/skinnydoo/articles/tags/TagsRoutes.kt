@@ -16,7 +16,7 @@ import org.koin.ktor.ext.inject
 @Location("/tags")
 class TagsRoute
 
-fun Route.allTags() {
+fun Route.getTags() {
   val allTags by inject<GetTags>(named("tags"))
 
   get<TagsRoute> {
@@ -27,7 +27,7 @@ fun Route.allTags() {
 fun Application.registerTagsRoutes() {
   routing {
     route(API_V1) {
-      allTags()
+      getTags()
     }
   }
 }

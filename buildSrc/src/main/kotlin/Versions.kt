@@ -12,4 +12,5 @@ object Versions {
   const val arrow = "1.0.0"
   const val serializationJson = "1.3.0"
   const val kotlinLogging = "2.1.21"
+  const val scientist = "1.0.2"
 }

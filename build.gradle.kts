@@ -51,6 +51,8 @@ dependencies {
   implementation(Deps.kotlinLogging)
   implementation(Deps.mysqlConnector)
 
+  implementation(Deps.scientist)
+
   implementation("commons-validator:commons-validator:1.7")
   implementation("com.auth0:java-jwt:3.18.2")
 
@@ -66,6 +68,7 @@ spotless {
         "indent_style" to "space",
         "tab_width" to "2",
         "max_line_length" to "120",
+        "disabled_rules" to "no-wildcard-imports",
       )
     )
   }
