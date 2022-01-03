@@ -31,12 +31,16 @@ interface ArticleRepository {
    * Get most recent articles from users you follow.
    */
   suspend fun feed(limit: Limit, offset: Offset, userId: UserId): Either<CommonErrors, List<Article>>
+
+  suspend fun favorArticle(slug: Slug, userId: UserId): Either<ArticleErrors, Article>
+  suspend fun unFavorArticle(slug: Slug, userId: UserId): Either<ArticleErrors, Article>
 }
 
 class DefaultArticleRepository(
   private val tagRepository: TagRepository,
   private val articleDao: ArticleDao,
   private val articleTagDao: ArticleTagDao,
+  private val favoriteArticleDao: FavoriteArticleDao,
 ) : ArticleRepository {
 
   override suspend fun add(
@@ -102,4 +106,21 @@ class DefaultArticleRepository(
     .toEither { ArticleNotFound(slug) }
     .flatMap { same -> if (!same) Forbidden.left() else Unit.right() }
     .tap { articleDao.delete(slug) }
+
+  override suspend fun favorArticle(slug: Slug, userId: UserId): Either<ArticleErrors, Article> {
+    return if (articleDao.exists(slug)) {
+      favoriteArticleDao.insert(slug, userId)
+      logger.info { "Successfully favor article [RecordID: $slug]" }
+      get(slug, userId)
+    } else ArticleNotFound(slug).left()
+  }
+
+  override suspend fun unFavorArticle(
+    slug: Slug,
+    userId: UserId,
+  ): Either<ArticleErrors, Article> = if (articleDao.exists(slug)) {
+    favoriteArticleDao.delete(slug)
+    logger.info { "Successfully un-favor article [RecordID: $slug]" }
+    get(slug, userId)
+  } else ArticleNotFound(slug).left()
 }

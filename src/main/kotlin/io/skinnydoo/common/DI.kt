@@ -29,7 +29,7 @@ private val repositoryModule = module {
   single { DefaultUserRepository(get()) } bind UserRepository::class
   single { DefaultAuthRepository(get(), get()) } bind AuthRepository::class
   single { DefaultProfileRepository(get(), get()) } bind ProfileRepository::class
-  single { DefaultArticleRepository(get(), get(), get()) } bind ArticleRepository::class
+  single { DefaultArticleRepository(get(), get(), get(), get()) } bind ArticleRepository::class
   single { DefaultTagRepository(get()) } bind TagRepository::class
   single { DefaultCommentRepository(get(), get()) } bind CommentRepository::class
 }
@@ -48,12 +48,15 @@ private val useCasesModule = module {
   single(named("getUserProfile")) { getUserProfileUseCaseFactory(get(IODispatcher), get()) }
   single(named("followUser")) { followUserUseCaseFactory(get(IODispatcher), get()) }
   single(named("unfollowUser")) { unfollowUserUseCaseFactory(get(IODispatcher), get()) }
+
   single(named("addArticle")) { addArticleUseCaseFactory(get(IODispatcher), get()) }
-  single(named("updateArticle")) { updateArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("getArticle")) { getArticleWithSlugUseCaseFactory(get(IODispatcher), get()) }
   single(named("allArticles")) { allArticlesUseCaseFactory(get(IODispatcher), get()) }
-  single(named("deleteArticle")) { deleteArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("feed")) { getFeedArticlesUseCaseFactory(get(IODispatcher), get()) }
+  single(named("updateArticle")) { updateArticleUseCaseFactory(get(IODispatcher), get()) }
+  single(named("deleteArticle")) { deleteArticleUseCaseFactory(get(IODispatcher), get()) }
+  single(named("favorArticle")) { favorArticleUseCaseFactory(get(IODispatcher), get()) }
+  single(named("unFavorArticle")) { unFavorArticleUseCaseFactory(get(IODispatcher), get()) }
 
   single(named("commentsForArticle")) { getCommentsForArticleUseCaseFactory(get(IODispatcher), get()) }
   single(named("addComments")) { addCommentsForArticleUseCaseFactory(get(IODispatcher), get()) }
@@ -81,6 +84,7 @@ private val databaseModule = module {
   single { DefaultUserDao(get()) } bind UserDao::class
   single { DefaultUserFollowerDao(get()) } bind UserFollowerDao::class
   single { DefaultArticleDao(get(), get(), get()) } bind ArticleDao::class
+  single { DefaultFavoriteArticleDao(get()) } bind FavoriteArticleDao::class
   single { DefaultArticleTagDao(get()) } bind ArticleTagDao::class
   single { DefaultTagDao(get()) } bind TagDao::class
   single { DefaultCommentsDao(get(), get()) } bind CommentsDao::class

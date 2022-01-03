@@ -19,6 +19,10 @@ typealias UpdateArticleUseCase = suspend (Slug, UpdateArticleDetails, UserId) ->
 
 typealias DeleteArticleUseCase = suspend (Slug, UserId) -> Either<ArticleErrors, Unit>
 
+typealias FavorArticleUseCase = suspend (Slug, UserId) -> Either<ArticleErrors, Article>
+
+typealias UnFavorArticleUseCase = suspend (Slug, UserId) -> Either<ArticleErrors, Article>
+
 fun addArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
@@ -58,3 +62,13 @@ fun deleteArticleUseCaseFactory(
   dispatcher: CoroutineDispatcher,
   repository: ArticleRepository,
 ): DeleteArticleUseCase = { slug, userId -> withContext(dispatcher) { repository.remove(slug, userId) } }
+
+fun favorArticleUseCaseFactory(
+  dispatcher: CoroutineDispatcher,
+  repository: ArticleRepository,
+): FavorArticleUseCase = { slug, userId -> withContext(dispatcher) { repository.favorArticle(slug, userId) } }
+
+fun unFavorArticleUseCaseFactory(
+  dispatcher: CoroutineDispatcher,
+  repository: ArticleRepository,
+): FavorArticleUseCase = { slug, userId -> withContext(dispatcher) { repository.unFavorArticle(slug, userId) } }

@@ -22,6 +22,9 @@ dependencies {
 
   implementation(Deps.Arrow.core)
 
+  implementation(Deps.coroutines)
+  implementation(Deps.coroutinesSlf4j)
+
   implementation(Deps.Koin.koin)
   implementation(Deps.Koin.koinLogger)
 

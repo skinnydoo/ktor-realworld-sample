@@ -9,12 +9,7 @@ import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.delete
-import io.ktor.locations.get
-import io.ktor.locations.post
-import io.ktor.locations.put
+import io.ktor.locations.*
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -22,17 +17,11 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.skinnydoo.API_V1
 import io.skinnydoo.articles.tags.Tag
-import io.skinnydoo.common.ErrorEnvelope
-import io.skinnydoo.common.InvalidSlug
-import io.skinnydoo.common.Limit
-import io.skinnydoo.common.Offset
-import io.skinnydoo.common.Slug
-import io.skinnydoo.common.Username
-import io.skinnydoo.common.handleErrors
+import io.skinnydoo.common.*
 import io.skinnydoo.users.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
-import java.util.UUID
+import java.util.*
 
 const val ARTICLES = "/articles"
 
@@ -49,7 +38,18 @@ data class ArticlesRoute(
 data class ArticleFeedRoute(val limit: Int = 20, val offset: Int = 0)
 
 @Location("$ARTICLES/{slug}")
-data class ArticleRoute(val slug: String)
+data class ArticleRoute(val slug: String) {
+
+  @Location("/comments")
+  data class Comments(val parent: ArticleRoute) {
+
+    @Location("/{id}")
+    data class Comment(val parent: Comments, val id: Int)
+  }
+
+  @Location("/favorite")
+  data class Favorite(val parent: ArticleRoute)
+}
 
 /**
  * Get most recent articles globally. Auth is optional.
@@ -129,8 +129,9 @@ fun Route.getArticleWithSlug() {
 
       Either.catch { UUID.fromString(params.slug) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
+        .map(::Slug)
         .fold({ handleErrors(it) }) { s ->
-          getArticleWithSlug(Slug(s), userId)
+          getArticleWithSlug(s, userId)
             .map { ArticleResponse(it) }
             .fold({ handleErrors(it) }) { call.respond(it) }
         }
@@ -152,16 +153,11 @@ fun Route.updateArticle() {
       val body = call.receive<UpdateArticleRequest>().article
 
       Slug.fromString(params.slug)
-        .fold(
-          ifEmpty = {
-            val errorBody = ErrorEnvelope(mapOf("body" to listOf("Unknown slug")))
-            call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
-          },
-          ifSome = { slug ->
-            updateArticle(slug, body, self.id).map { ArticleResponse(it) }
-              .fold({ handleErrors(it) }, { call.respond(it) })
-          }
-        )
+        .toEither { InvalidSlug() }
+        .fold({ handleErrors(it) }) { slug ->
+          updateArticle(slug, body, self.id).map { ArticleResponse(it) }
+            .fold({ handleErrors(it) }, { call.respond(it) })
+        }
     }
   }
 }
@@ -174,23 +170,60 @@ fun Route.deleteArticle() {
 
   authenticate("auth-jwt") {
     delete<ArticleRoute> { params ->
-      val self = call.principal<User>()
+      val user = call.principal<User>()
         ?: return@delete call.respond(
           status = HttpStatusCode.Unauthorized,
           message = ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
         )
 
       Slug.fromString(params.slug)
-        .fold(
-          ifEmpty = {
-            val errorBody = ErrorEnvelope(mapOf("body" to listOf("Unknown slug")))
-            call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
-          },
-          ifSome = { slug ->
-            deleteArticleWithSlug(slug, self.id)
-              .fold({ handleErrors(it) }, { call.respond(HttpStatusCode.NoContent) })
-          }
+        .toEither { InvalidSlug() }
+        .fold({ handleErrors(it) }) { slug ->
+          deleteArticleWithSlug(slug, user.id)
+            .fold({ handleErrors(it) }, { call.respond(HttpStatusCode.NoContent) })
+        }
+    }
+  }
+}
+
+fun Route.favoriteArticle() {
+  val favorArticle by inject<FavorArticleUseCase>(named("favorArticle"))
+
+  authenticate("auth-jwt") {
+    post<ArticleRoute.Favorite> { params ->
+      val user = call.principal<User>()
+        ?: return@post call.respond(
+          status = HttpStatusCode.Unauthorized,
+          message = ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
         )
+
+      Slug.fromString(params.parent.slug)
+        .toEither { InvalidSlug() }
+        .fold({ handleErrors(it) }) { slug ->
+          favorArticle(slug, user.id).map { ArticleResponse(it) }
+            .fold({ handleErrors(it) }, { call.respond(it) })
+        }
+    }
+  }
+}
+
+fun Route.unFavoriteArticle() {
+  val unFavorArticle by inject<UnFavorArticleUseCase>(named("unFavorArticle"))
+
+  authenticate("auth-jwt") {
+    delete<ArticleRoute.Favorite> { params ->
+      val user = call.principal<User>()
+        ?: return@delete call.respond(
+          status = HttpStatusCode.Unauthorized,
+          message = ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
+        )
+
+      Slug.fromString(params.parent.slug)
+        .toEither { InvalidSlug() }
+        .fold({ handleErrors(it) }) { slug ->
+          unFavorArticle(slug, user.id).map { ArticleResponse(it) }
+            .fold({ handleErrors(it) }, { call.respond(it) })
+        }
     }
   }
 }
@@ -204,6 +237,8 @@ fun Application.registerArticleRoutes() {
       deleteArticle()
       allArticles()
       articleFeed()
+      favoriteArticle()
+      unFavoriteArticle()
     }
   }
 }

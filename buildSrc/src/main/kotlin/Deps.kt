@@ -7,6 +7,8 @@ object Deps {
   const val jbcrypt = "org.mindrot:jbcrypt:${Versions.jbcrypt}"
   const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationJson}"
   const val scientist = "com.github.spoptchev:scientist:${Versions.scientist}"
+  const val coroutinesSlf4j = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:${Versions.kotlin}"
+  const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlin}"
 
   object Arrow {
     const val stack = "io.arrow-kt:arrow-stack:${Versions.arrow}"

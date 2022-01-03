@@ -6,7 +6,6 @@ import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
-import io.ktor.locations.Location
 import io.ktor.locations.delete
 import io.ktor.locations.get
 import io.ktor.locations.post
@@ -16,33 +15,21 @@ import io.ktor.routing.Route
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.skinnydoo.API_V1
-import io.skinnydoo.articles.ARTICLES
-import io.skinnydoo.common.CommentId
-import io.skinnydoo.common.ErrorEnvelope
-import io.skinnydoo.common.InvalidSlug
-import io.skinnydoo.common.Slug
-import io.skinnydoo.common.handleErrors
+import io.skinnydoo.articles.ArticleRoute
+import io.skinnydoo.common.*
 import io.skinnydoo.users.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
-import java.util.UUID
-
-private const val COMMENTS = "$ARTICLES/{slug}/comments"
-
-@Location(COMMENTS)
-data class CommentsRoute(val slug: String)
-
-@Location("$COMMENTS/{id}")
-data class CommentRoute(val slug: String, val id: Int)
+import java.util.*
 
 fun Route.getCommentsForArticle() {
   val commentsForArticle by inject<GetCommentsForArticleUseCase>(named("commentsForArticle"))
 
   authenticate("auth-jwt", optional = true) {
-    get<CommentsRoute> { params ->
+    get<ArticleRoute.Comments> { params ->
       val userId = call.principal<User>()?.id
 
-      Either.catch { Slug(UUID.fromString(params.slug)) }
+      Either.catch { Slug(UUID.fromString(params.parent.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
         .fold({ handleErrors(it) }) { slug ->
           commentsForArticle(slug, userId).map(::CommentsResponse)
@@ -56,7 +43,7 @@ fun Route.addCommentForArticle() {
   val addComments by inject<AddCommentForArticleUseCase>(named("addComments"))
 
   authenticate("auth-jwt") {
-    post<CommentsRoute> { params ->
+    post<ArticleRoute.Comments> { params ->
       val userId = call.principal<User>()?.id
         ?: return@post call.respond(
           HttpStatusCode.Unauthorized,
@@ -65,7 +52,7 @@ fun Route.addCommentForArticle() {
 
       val body = call.receive<CreateCommentRequest>()
 
-      Either.catch { Slug(UUID.fromString(params.slug)) }
+      Either.catch { Slug(UUID.fromString(params.parent.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
         .fold({ handleErrors(it) }) { slug ->
           addComments(slug, userId, body.comment)
@@ -80,14 +67,14 @@ fun Route.removeCommentForArticle() {
   val removeComments by inject<RemoveCommentFromArticleUseCase>(named("removeComments"))
 
   authenticate("auth-jwt") {
-    delete<CommentRoute> { params ->
+    delete<ArticleRoute.Comments.Comment> { params ->
       val userId = call.principal<User>()?.id
         ?: return@delete call.respond(
           HttpStatusCode.Unauthorized,
           ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
         )
 
-      Either.catch { Slug(UUID.fromString(params.slug)) }
+      Either.catch { Slug(UUID.fromString(params.parent.parent.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
         .fold({ handleErrors(it) }) { slug ->
           removeComments(slug, userId, CommentId(params.id))

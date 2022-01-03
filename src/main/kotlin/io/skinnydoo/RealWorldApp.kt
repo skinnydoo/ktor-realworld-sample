@@ -13,11 +13,7 @@ import io.ktor.serialization.json
 import io.skinnydoo.articles.comments.registerCommentRoutes
 import io.skinnydoo.articles.registerArticleRoutes
 import io.skinnydoo.articles.tags.registerTagsRoutes
-import io.skinnydoo.common.DatabaseFactory
-import io.skinnydoo.common.JwtService
-import io.skinnydoo.common.configure
-import io.skinnydoo.common.dbConfig
-import io.skinnydoo.common.jwtConfig
+import io.skinnydoo.common.*
 import io.skinnydoo.profiles.registerProfileRoutes
 import io.skinnydoo.users.GetUserWithId
 import io.skinnydoo.users.registerUserRoutes
@@ -28,7 +24,7 @@ import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
 import org.slf4j.event.Level
 
-const val API_V1 = "/v1"
+const val API_V1 = "api/v1"
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
