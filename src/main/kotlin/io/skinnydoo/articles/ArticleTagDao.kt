@@ -1,8 +1,8 @@
 package io.skinnydoo.articles
 
 import io.skinnydoo.articles.tags.TagId
-import io.skinnydoo.common.DatabaseTransactionRunner
 import io.skinnydoo.common.Slug
+import io.skinnydoo.common.db.DatabaseTransactionRunner
 import org.jetbrains.exposed.sql.batchInsert
 
 interface ArticleTagDao {

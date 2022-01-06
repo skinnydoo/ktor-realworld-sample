@@ -11,7 +11,7 @@ import io.ktor.auth.jwt.jwt
 import io.skinnydoo.users.User
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Duration
-import java.util.Date
+import java.util.*
 
 data class JWTConfig(
   val issuer: String,
@@ -40,6 +40,10 @@ class JwtService(private val jwtConfig: JWTConfig) {
     .sign(algorithm)
 
   private fun expiresAt() = Date(System.currentTimeMillis() + jwtConfig.validity.toMillis())
+
+  companion object {
+    const val CONFIG_PATH = "ktor.jwt"
+  }
 }
 
 fun hash(password: String): String = BCrypt.hashpw(password, BCrypt.gensalt())

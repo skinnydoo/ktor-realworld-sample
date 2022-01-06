@@ -1,10 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.unbrokendome.gradle.plugins.testsets.dsl.testSets
 
 plugins {
   application
   kotlin("jvm") version Versions.kotlin
   kotlin("plugin.serialization") version Versions.kotlin
   id("com.diffplug.spotless") version Versions.spotless
+  id("org.unbroken-dome.test-sets") version "4.0.0"
 }
 
 group = "io.skinnydoo"
@@ -60,7 +62,13 @@ dependencies {
   implementation("com.auth0:java-jwt:3.18.2")
 
   testImplementation(Deps.Testing.serverTest)
-  testImplementation(Deps.Testing.ktTest)
+  testImplementation(Deps.Testing.coroutinesTest)
+  testImplementation(Deps.Testing.kotestJunit5)
+  testImplementation(Deps.Testing.kotestAssertionsCore)
+  testImplementation(Deps.Testing.kotestAssertionsJson)
+  testImplementation(Deps.Testing.kotestAssertionsKtor)
+  testImplementation(Deps.Testing.kotestAssertionsArrow)
+  testImplementation(Deps.Testing.h2)
 }
 
 spotless {
@@ -81,6 +89,10 @@ spotless {
   }
 }
 
+testSets {
+  val integrationTest by creating
+}
+
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions {
     languageVersion = "1.6"
@@ -89,6 +101,11 @@ tasks.withType<KotlinCompile>().configureEach {
       "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
       "-Xopt-in=io.ktor.locations.KtorExperimentalLocationsAPI",
       "-Xopt-in=kotlin.time.ExperimentalTime",
+      "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
     )
   }
+}
+
+tasks.withType<Test> {
+  useJUnitPlatform()
 }

@@ -3,13 +3,7 @@ package io.skinnydoo.users
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import io.skinnydoo.common.Email
-import io.skinnydoo.common.LoginErrors
-import io.skinnydoo.common.Password
-import io.skinnydoo.common.UserErrors
-import io.skinnydoo.common.UserExists
-import io.skinnydoo.common.Username
-import io.skinnydoo.common.checkPassword
+import io.skinnydoo.common.*
 
 interface AuthRepository {
   suspend fun register(username: Username, email: Email, password: Password): Either<UserErrors, User>
@@ -36,8 +30,7 @@ class DefaultAuthRepository(
   override suspend fun login(
     email: Email,
     password: Password,
-  ): Either<LoginErrors, User> = userDao.userWithEmail(email)
-    ?.let { user ->
+  ): Either<LoginErrors, User> = userDao.userWithEmail(email)?.let { user ->
       if (checkPassword(password.value, user.password)) {
         user.right()
       } else {

@@ -24,6 +24,7 @@
 .idea/artifacts
 .idea/*.iml
 .idea/modules
+.idea/runConfigurations/
 
 # Generated files
 .idea/**/contentModel.xml

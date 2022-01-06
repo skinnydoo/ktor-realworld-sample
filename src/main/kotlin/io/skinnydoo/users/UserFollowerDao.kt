@@ -1,7 +1,7 @@
 package io.skinnydoo.users
 
-import io.skinnydoo.common.DatabaseTransactionRunner
 import io.skinnydoo.common.UserId
+import io.skinnydoo.common.db.DatabaseTransactionRunner
 import org.jetbrains.exposed.sql.*
 
 interface UserFollowerDao {

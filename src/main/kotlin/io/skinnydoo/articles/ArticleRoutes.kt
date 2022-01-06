@@ -112,7 +112,7 @@ fun Route.createArticle() {
 
       addArticle(body, self.id)
         .map { ArticleResponse(it) }
-        .fold({ handleErrors(it) }) { call.respond(it) }
+        .fold({ handleErrors(it) }) { call.respond(HttpStatusCode.Created, it) }
     }
   }
 }

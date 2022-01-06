@@ -32,8 +32,7 @@ fun Route.getCommentsForArticle() {
       Either.catch { Slug(UUID.fromString(params.parent.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
         .fold({ handleErrors(it) }) { slug ->
-          commentsForArticle(slug, userId).map(::CommentsResponse)
-            .fold({ handleErrors(it) }, { call.respond(it) })
+          commentsForArticle(slug, userId).map(::CommentsResponse).fold({ handleErrors(it) }, { call.respond(it) })
         }
     }
   }
@@ -44,20 +43,16 @@ fun Route.addCommentForArticle() {
 
   authenticate("auth-jwt") {
     post<ArticleRoute.Comments> { params ->
-      val userId = call.principal<User>()?.id
-        ?: return@post call.respond(
-          HttpStatusCode.Unauthorized,
-          ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
-        )
+      val userId = call.principal<User>()?.id ?: return@post call.respond(HttpStatusCode.Unauthorized,
+        ErrorEnvelope(mapOf("body" to listOf("Unauthorized"))))
 
       val body = call.receive<CreateCommentRequest>()
 
       Either.catch { Slug(UUID.fromString(params.parent.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
         .fold({ handleErrors(it) }) { slug ->
-          addComments(slug, userId, body.comment)
-            .map { CommentResponse(it) }
-            .fold({ handleErrors(it) }, { call.respond(it) })
+          addComments(slug, userId, body.comment).map { CommentResponse(it) }
+            .fold({ handleErrors(it) }, { call.respond(HttpStatusCode.Created, it) })
         }
     }
   }
@@ -68,17 +63,14 @@ fun Route.removeCommentForArticle() {
 
   authenticate("auth-jwt") {
     delete<ArticleRoute.Comments.Comment> { params ->
-      val userId = call.principal<User>()?.id
-        ?: return@delete call.respond(
-          HttpStatusCode.Unauthorized,
-          ErrorEnvelope(mapOf("body" to listOf("Unauthorized")))
-        )
+      val userId = call.principal<User>()?.id ?: return@delete call.respond(HttpStatusCode.Unauthorized,
+        ErrorEnvelope(mapOf("body" to listOf("Unauthorized"))))
 
       Either.catch { Slug(UUID.fromString(params.parent.parent.slug)) }
         .mapLeft { InvalidSlug(it.localizedMessage) }
         .fold({ handleErrors(it) }) { slug ->
-          removeComments(slug, userId, CommentId(params.id))
-            .fold({ handleErrors(it) }, { call.respond(HttpStatusCode.NoContent) })
+          removeComments(slug, userId, CommentId(params.id)).fold({ handleErrors(it) },
+            { call.respond(HttpStatusCode.NoContent) })
         }
     }
   }

@@ -1,4 +1,4 @@
-package io.skinnydoo.common
+package io.skinnydoo.common.db
 
 import kotlinx.coroutines.CoroutineDispatcher
 import org.jetbrains.exposed.sql.Transaction
