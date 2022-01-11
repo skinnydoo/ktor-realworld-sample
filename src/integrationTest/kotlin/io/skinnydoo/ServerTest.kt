@@ -5,8 +5,6 @@ import io.kotest.assertions.json.*
 import io.kotest.assertions.ktor.*
 import io.kotest.core.spec.style.*
 import io.kotest.matchers.*
-import io.kotest.matchers.maps.*
-import io.kotest.matchers.nulls.*
 import io.kotest.matchers.string.*
 import io.ktor.http.*
 import io.ktor.locations.*
@@ -14,20 +12,19 @@ import io.ktor.server.testing.*
 import io.skinnydoo.common.Email
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.Username
+import io.skinnydoo.common.models.*
 import io.skinnydoo.users.*
 import kotlinx.serialization.builtins.nullable
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import java.time.LocalDateTime
 
 class ServerTest : DescribeSpec({
-  context("Authentication") {
+  describe("Authentication") {
     val username = Username("tu${LocalDateTime.now().nano}")
     val email = Email("$username@email.com")
     val password = Password("test123!")
     var apiToken = ""
 
-    describe("Register") {
+    context("Register") {
       describe("POST /api/v1/users") {
         it("should return a response containing the user") {
           withTestServer {
@@ -38,32 +35,22 @@ class ServerTest : DescribeSpec({
               setBody(json.encodeToString(RegisterUserRequest.serializer(), request))
             }
 
-            val response = call.response
-            val content = response.content
-            assertSoftly {
-              response shouldHaveStatus HttpStatusCode.Created
-              response should haveContentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-
-              content shouldNot beNull()
-              content shouldNot beBlank()
-
-              val responseJson = json.decodeFromString(JsonObject.serializer(), content.orEmpty().ifEmpty { "{}" })
-              responseJson shouldContainKey "user"
-
-              val user = responseJson.getValue("user").jsonObject
-
-              user shouldContainKey "email"
-              user shouldContainKey "username"
-              user shouldContainKey "bio"
-              user shouldContainKey "image"
-              user shouldContainKey "token"
+            assertSoftly(call.response) {
+              this shouldHaveStatus HttpStatusCode.Created
+              this should haveContentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+              content shouldContainJsonKey "user"
+              content shouldContainJsonKey "user.email"
+              content shouldContainJsonKey "user.username"
+              content shouldContainJsonKey "user.bio"
+              content shouldContainJsonKey "user.token"
+              content shouldContainJsonKey "user.image"
             }
           }
         }
       }
     }
 
-    describe("Login") {
+    context("Login") {
       describe("POST /api/v1/users/login") {
         it("should return a response containing the user") {
           withTestServer {
@@ -82,14 +69,14 @@ class ServerTest : DescribeSpec({
               content shouldContainJsonKey "user.username"
               content shouldContainJsonKey "user.bio"
               content shouldContainJsonKey "user.token"
-              content should containJsonKeyValue("user.image", null as String?)
+              content shouldContainJsonKey "user.image"
             }
           }
         }
       }
     }
 
-    describe("Login and Remember Token") {
+    context("Login and Remember Token") {
       describe("POST /api/v1/users/login") {
         it("should return a response containing the user") {
           withTestServer {
@@ -108,7 +95,7 @@ class ServerTest : DescribeSpec({
               content shouldContainJsonKey "user.username"
               content shouldContainJsonKey "user.bio"
               content shouldContainJsonKey "user.token"
-              content should containJsonKeyValue("user.image", null as String?)
+              content shouldContainJsonKey "user.image"
             }
 
             val content = call.response.content
@@ -123,7 +110,7 @@ class ServerTest : DescribeSpec({
       }
     }
 
-    describe("Current User") {
+    context("Current User") {
       describe("GET /api/v1/user") {
         it("should return the current user") {
           withTestServer {
@@ -141,7 +128,7 @@ class ServerTest : DescribeSpec({
               content shouldContainJsonKey "user.username"
               content shouldContainJsonKey "user.bio"
               content shouldContainJsonKey "user.token"
-              content should containJsonKeyValue("user.image", null as String?)
+              content shouldContainJsonKey "user.image"
             }
           }
         }
