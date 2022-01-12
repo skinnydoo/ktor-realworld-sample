@@ -1,9 +1,9 @@
 package io.skinnydoo.profiles
 
 import arrow.core.Either
-import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.UserId
 import io.skinnydoo.common.Username
+import io.skinnydoo.common.models.UserErrors
 import io.skinnydoo.users.UserFollowerDao
 import io.skinnydoo.users.UserRepository
 

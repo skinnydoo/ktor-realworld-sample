@@ -33,8 +33,11 @@ class JwtService(private val jwtConfig: JWTConfig) {
     .withIssuer(jwtConfig.issuer)
     .withAudience(jwtConfig.audience)
     .withClaim("username", user.username)
+    .withIssuedAt(issuedAt())
     .withExpiresAt(expiresAt())
     .sign(algorithm)
+
+  private fun issuedAt() = Date(System.currentTimeMillis())
 
   private fun expiresAt() = Date(System.currentTimeMillis() + jwtConfig.validity.toMillis())
 

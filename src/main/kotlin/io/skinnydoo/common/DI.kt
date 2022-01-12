@@ -19,7 +19,7 @@ import io.skinnydoo.graphql.KtorGraphQLContextFactory
 import io.skinnydoo.graphql.KtorGraphQLRequestParser
 import io.skinnydoo.graphql.KtorGraphQLServer
 import io.skinnydoo.graphql.schema.LoginMutation
-import io.skinnydoo.graphql.schema.MeQuery
+import io.skinnydoo.graphql.schema.MeQueryService
 import io.skinnydoo.graphql.schema.RegisterMutation
 import io.skinnydoo.profiles.*
 import io.skinnydoo.users.*
@@ -111,9 +111,9 @@ private val graphQLModule = module {
   single { KtorGraphQLRequestParser(get()) }
   single { KtorGraphQLContextFactory() }
   single {
-    val config = SchemaGeneratorConfig(supportedPackages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common"))
+    val config = SchemaGeneratorConfig(supportedPackages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common.models"))
     val queries = listOf(
-      TopLevelObject(MeQuery()),
+      TopLevelObject(MeQueryService(get(named("getUserWithId")), get())),
     )
     val mutations = listOf(
       TopLevelObject(LoginMutation(get(named("login")), get())),

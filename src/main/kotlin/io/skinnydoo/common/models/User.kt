@@ -35,7 +35,7 @@ data class LoggedInUser(
   val username: String,
   val bio: String,
   val image: String,
-) : LoginResult, RegisterResult {
+) : LoginResult, RegisterResult, SelfQueryResult, UpdateSelfResult {
 
   companion object {
     fun fromUser(user: User, token: String): LoggedInUser {

@@ -6,6 +6,7 @@ import arrow.core.left
 import arrow.core.right
 import io.skinnydoo.articles.ArticleDao
 import io.skinnydoo.common.*
+import io.skinnydoo.common.models.*
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

@@ -1,8 +1,8 @@
 package io.skinnydoo.articles.tags
 
 import arrow.core.Either
-import io.skinnydoo.common.ServerError
 import io.skinnydoo.common.Slug
+import io.skinnydoo.common.models.ServerError
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

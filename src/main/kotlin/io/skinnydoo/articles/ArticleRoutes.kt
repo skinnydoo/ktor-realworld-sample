@@ -18,6 +18,7 @@ import io.ktor.routing.routing
 import io.skinnydoo.API_V1
 import io.skinnydoo.articles.tags.Tag
 import io.skinnydoo.common.*
+import io.skinnydoo.common.models.InvalidSlug
 import io.skinnydoo.common.models.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject

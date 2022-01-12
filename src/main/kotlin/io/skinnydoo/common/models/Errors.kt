@@ -1,7 +1,7 @@
-package io.skinnydoo.common
+package io.skinnydoo.common.models
 
-import io.skinnydoo.common.models.LoginResult
-import io.skinnydoo.common.models.RegisterResult
+import io.skinnydoo.common.CommentId
+import io.skinnydoo.common.Slug
 
 typealias UserNotFound = UserErrors.UserNotFound
 
@@ -13,6 +13,12 @@ typealias InvalidSlug = InvalidPropertyError.SlugInvalid
 
 interface Error {
   val message: String
+}
+
+sealed interface AuthenticationErrors : Error, SelfQueryResult {
+  data class LoginRequired(override val message: String = "You must be logged in") : AuthenticationErrors
+  data class TokenRequired(override val message: String = "Token is required") : AuthenticationErrors
+  data class InvalidToken(override val message: String = "Invalid token") : AuthenticationErrors
 }
 
 sealed interface CommonErrors : ArticleErrors
@@ -28,8 +34,8 @@ sealed interface RegistrationErrors : Error, RegisterResult {
   data class UserAlreadyExist(override val message: String) : RegistrationErrors
 }
 
-sealed interface UserErrors {
-  data class UserNotFound(val message: String = "User not found") : UserErrors
+sealed interface UserErrors : Error, SelfQueryResult {
+  data class UserNotFound(override val message: String = "User not found") : UserErrors
 }
 
 sealed interface ArticleErrors {

@@ -4,6 +4,7 @@ import arrow.core.*
 import io.skinnydoo.articles.tags.Tag
 import io.skinnydoo.articles.tags.TagRepository
 import io.skinnydoo.common.*
+import io.skinnydoo.common.models.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope

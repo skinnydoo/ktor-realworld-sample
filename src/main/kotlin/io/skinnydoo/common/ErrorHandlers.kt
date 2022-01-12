@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.util.*
 import io.ktor.util.pipeline.*
+import io.skinnydoo.common.models.*
 
 fun StatusPages.Configuration.configure() {
   exception<Throwable> { e ->
