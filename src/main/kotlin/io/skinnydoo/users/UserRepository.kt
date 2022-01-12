@@ -3,11 +3,9 @@ package io.skinnydoo.users
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import io.skinnydoo.common.Email
-import io.skinnydoo.common.UserErrors
-import io.skinnydoo.common.UserId
-import io.skinnydoo.common.UserNotFound
-import io.skinnydoo.common.Username
+import io.skinnydoo.common.*
+import io.skinnydoo.common.models.User
+import io.skinnydoo.common.models.UserUpdateDetails
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

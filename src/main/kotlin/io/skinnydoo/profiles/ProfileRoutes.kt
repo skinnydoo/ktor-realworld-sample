@@ -20,7 +20,7 @@ import io.skinnydoo.API_V1
 import io.skinnydoo.common.ErrorEnvelope
 import io.skinnydoo.common.Username
 import io.skinnydoo.common.handleErrors
-import io.skinnydoo.users.User
+import io.skinnydoo.common.models.User
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
 

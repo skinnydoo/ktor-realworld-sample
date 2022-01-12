@@ -2,6 +2,8 @@ package io.skinnydoo.users
 
 import io.skinnydoo.common.*
 import io.skinnydoo.common.db.DatabaseTransactionRunner
+import io.skinnydoo.common.models.User
+import io.skinnydoo.common.models.UserUpdateDetails
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select

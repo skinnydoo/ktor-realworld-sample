@@ -9,6 +9,7 @@ object Deps {
   const val scientist = "com.github.spoptchev:scientist:${Versions.scientist}"
   const val coroutinesSlf4j = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:${Versions.kotlin}"
   const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlin}"
+  const val graphqlKotlinServer = "com.expediagroup:graphql-kotlin-server:${Versions.graphqlKotlin}"
 
   object Arrow {
     const val stack = "io.arrow-kt:arrow-stack:${Versions.arrow}"

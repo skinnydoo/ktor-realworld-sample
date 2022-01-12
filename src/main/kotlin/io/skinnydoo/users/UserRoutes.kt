@@ -14,6 +14,7 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.skinnydoo.API_V1
 import io.skinnydoo.common.*
+import io.skinnydoo.common.models.*
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject

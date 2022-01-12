@@ -1,6 +1,6 @@
 package io.skinnydoo.profiles
 
-import io.skinnydoo.users.User
+import io.skinnydoo.common.models.User
 import io.skinnydoo.users.UserTable
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow

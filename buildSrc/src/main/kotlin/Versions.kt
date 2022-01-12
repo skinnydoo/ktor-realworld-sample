@@ -15,4 +15,5 @@ object Versions {
   const val scientist = "1.0.2"
   const val kotest = "5.0.3"
   const val h2 = "2.0.204"
+  const val graphqlKotlin = "5.3.1"
 }

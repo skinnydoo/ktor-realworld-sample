@@ -1,37 +1,41 @@
 package io.skinnydoo.common
 
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.features.StatusPages
-import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.util.*
+import io.ktor.util.pipeline.*
 
 fun StatusPages.Configuration.configure() {
   exception<Throwable> { e ->
+    application.log.error(e)
     call.respond(HttpStatusCode.InternalServerError, ErrorEnvelope(mapOf("body" to listOf(e.localizedMessage))))
   }
 }
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: LoginErrors) = when (error) {
-  LoginErrors.EmailUnknown -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Unknown email")))
+  is LoginErrors.EmailUnknown -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(status = HttpStatusCode.Unauthorized, message = errorBody)
   }
-  LoginErrors.PasswordInvalid -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Invalid password")))
+  is LoginErrors.PasswordInvalid -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(status = HttpStatusCode.Unauthorized, message = errorBody)
   }
 }
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: UserErrors) = when (error) {
-  is UserErrors.UserAlreadyExist -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
-    call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
-  }
   is UserErrors.UserNotFound -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.NotFound, errorBody)
+  }
+}
+
+suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: RegistrationErrors) = when (error) {
+  is RegistrationErrors.UserAlreadyExist -> {
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
+    call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
   }
 }
 

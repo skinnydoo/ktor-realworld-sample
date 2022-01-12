@@ -7,7 +7,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
-import io.skinnydoo.users.User
+import io.skinnydoo.common.models.User
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Duration
 import java.util.*

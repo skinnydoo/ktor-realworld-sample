@@ -1,10 +1,11 @@
-package io.skinnydoo.users
+package io.skinnydoo.common.models
 
 import io.ktor.auth.*
 import io.skinnydoo.common.Email
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.UserId
 import io.skinnydoo.common.Username
+import io.skinnydoo.users.UserTable
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow
 
@@ -18,14 +19,12 @@ data class User(
 ) : Principal {
 
   companion object {
-    fun fromRow(row: ResultRow): User = User(
-      id = UserId(row[UserTable.id].value),
+    fun fromRow(row: ResultRow): User = User(id = UserId(row[UserTable.id].value),
       email = row[UserTable.email],
       password = row[UserTable.password],
       username = row[UserTable.username],
       bio = row[UserTable.bio],
-      image = row[UserTable.image]
-    )
+      image = row[UserTable.image])
   }
 }
 
@@ -36,12 +35,11 @@ data class LoggedInUser(
   val username: String,
   val bio: String,
   val image: String,
-) {
+) : LoginResult, RegisterResult {
 
   companion object {
     fun fromUser(user: User, token: String): LoggedInUser {
-      return LoggedInUser(
-        email = user.email,
+      return LoggedInUser(email = user.email,
         token = token,
         username = user.username,
         bio = user.bio,

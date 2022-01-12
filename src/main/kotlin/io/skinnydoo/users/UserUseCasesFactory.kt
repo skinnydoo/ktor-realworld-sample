@@ -3,6 +3,8 @@ package io.skinnydoo.users
 import arrow.core.Either
 import io.skinnydoo.common.UserErrors
 import io.skinnydoo.common.UserId
+import io.skinnydoo.common.models.User
+import io.skinnydoo.common.models.UserUpdateDetails
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 

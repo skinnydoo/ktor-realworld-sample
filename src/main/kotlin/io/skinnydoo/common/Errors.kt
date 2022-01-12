@@ -1,7 +1,9 @@
 package io.skinnydoo.common
 
+import io.skinnydoo.common.models.LoginResult
+import io.skinnydoo.common.models.RegisterResult
+
 typealias UserNotFound = UserErrors.UserNotFound
-typealias UserExists = UserErrors.UserAlreadyExist
 
 typealias ArticleNotFound = ArticleErrors.ArticleNotFound
 typealias AuthorNotFound = ArticleErrors.AuthorNotFound
@@ -9,17 +11,24 @@ typealias CommentNotFound = ArticleErrors.CommentNotFound
 
 typealias InvalidSlug = InvalidPropertyError.SlugInvalid
 
+interface Error {
+  val message: String
+}
+
 sealed interface CommonErrors : ArticleErrors
 data class ServerError(val message: String = "Something went wrong") : CommonErrors
 object Forbidden : CommonErrors
 
-sealed interface LoginErrors {
-  object EmailUnknown : LoginErrors
-  object PasswordInvalid : LoginErrors
+sealed interface LoginErrors : Error, LoginResult {
+  data class EmailUnknown(override val message: String) : LoginErrors
+  data class PasswordInvalid(override val message: String) : LoginErrors
+}
+
+sealed interface RegistrationErrors : Error, RegisterResult {
+  data class UserAlreadyExist(override val message: String) : RegistrationErrors
 }
 
 sealed interface UserErrors {
-  data class UserAlreadyExist(val message: String = "User exists") : UserErrors
   data class UserNotFound(val message: String = "User not found") : UserErrors
 }
 

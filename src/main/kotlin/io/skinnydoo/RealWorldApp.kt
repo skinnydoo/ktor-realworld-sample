@@ -1,15 +1,11 @@
 package io.skinnydoo
 
-import io.ktor.application.Application
-import io.ktor.application.install
-import io.ktor.auth.authentication
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
-import io.ktor.locations.Locations
-import io.ktor.request.path
-import io.ktor.serialization.json
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.features.*
+import io.ktor.locations.*
+import io.ktor.request.*
+import io.ktor.serialization.*
 import io.skinnydoo.articles.comments.registerCommentRoutes
 import io.skinnydoo.articles.registerArticleRoutes
 import io.skinnydoo.articles.tags.registerTagsRoutes
@@ -19,6 +15,7 @@ import io.skinnydoo.common.db.DatabaseFactory
 import io.skinnydoo.common.db.dbConfig
 import io.skinnydoo.common.jwtConfig
 import io.skinnydoo.common.koinModules
+import io.skinnydoo.graphql.registerGraphQLRoute
 import io.skinnydoo.profiles.registerProfileRoutes
 import io.skinnydoo.users.GetUserWithId
 import io.skinnydoo.users.registerUserRoutes
@@ -61,4 +58,9 @@ fun Application.module(koinModules: List<Module> = koinModules()) {
   registerArticleRoutes()
   registerCommentRoutes()
   registerTagsRoutes()
+}
+
+@Suppress("unused")
+fun Application.graphQLModule() {
+  registerGraphQLRoute()
 }

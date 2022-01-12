@@ -12,7 +12,10 @@ import io.ktor.server.testing.*
 import io.skinnydoo.common.Email
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.Username
-import io.skinnydoo.users.*
+import io.skinnydoo.common.models.*
+import io.skinnydoo.users.UserCreateRoute
+import io.skinnydoo.users.UserLoginRoute
+import io.skinnydoo.users.UserRoute
 import kotlinx.serialization.builtins.nullable
 import java.time.LocalDateTime
 

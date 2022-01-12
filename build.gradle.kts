@@ -1,3 +1,6 @@
+@file:Suppress("UNUSED_VARIABLE")
+
+import com.expediagroup.graphql.plugin.gradle.graphql
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.unbrokendome.gradle.plugins.testsets.dsl.testSets
 
@@ -7,6 +10,7 @@ plugins {
   kotlin("plugin.serialization") version Versions.kotlin
   id("com.diffplug.spotless") version Versions.spotless
   id("org.unbroken-dome.test-sets") version "4.0.0"
+  id("com.expediagroup.graphql") version Versions.graphqlKotlin
 }
 
 group = "io.skinnydoo"
@@ -26,6 +30,7 @@ dependencies {
 
   implementation(Deps.coroutines)
   implementation(Deps.coroutinesSlf4j)
+  implementation(Deps.graphqlKotlinServer)
 
   implementation(Deps.Koin.koin)
   implementation(Deps.Koin.koinLogger)
@@ -69,6 +74,12 @@ dependencies {
   testImplementation(Deps.Testing.kotestAssertionsKtor)
   testImplementation(Deps.Testing.kotestAssertionsArrow)
   testImplementation(Deps.Testing.h2)
+}
+
+graphql {
+  schema {
+    packages = listOf("io.skinnydoo.graphql")
+  }
 }
 
 spotless {

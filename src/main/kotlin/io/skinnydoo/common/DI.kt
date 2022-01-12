@@ -2,6 +2,12 @@
 
 package io.skinnydoo.common
 
+import com.expediagroup.graphql.generator.SchemaGeneratorConfig
+import com.expediagroup.graphql.generator.TopLevelObject
+import com.expediagroup.graphql.generator.toSchema
+import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import graphql.GraphQL
 import io.skinnydoo.articles.*
 import io.skinnydoo.articles.comments.*
 import io.skinnydoo.articles.tags.*
@@ -9,6 +15,12 @@ import io.skinnydoo.common.db.DatabaseFactory
 import io.skinnydoo.common.db.DatabaseTransactionRunner
 import io.skinnydoo.common.db.DefaultDatabaseFactory
 import io.skinnydoo.common.db.ExposedTransactionRunner
+import io.skinnydoo.graphql.KtorGraphQLContextFactory
+import io.skinnydoo.graphql.KtorGraphQLRequestParser
+import io.skinnydoo.graphql.KtorGraphQLServer
+import io.skinnydoo.graphql.schema.LoginMutation
+import io.skinnydoo.graphql.schema.MeQuery
+import io.skinnydoo.graphql.schema.RegisterMutation
 import io.skinnydoo.profiles.*
 import io.skinnydoo.users.*
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,7 +38,8 @@ fun KoinApplication.configure(koinModules: List<Module>) {
   modules(koinModules)
 }
 
-fun koinModules(): List<Module> = listOf(appModule, databaseModule, repositoryModule, coroutinesModule, useCasesModule)
+fun koinModules(): List<Module> =
+  listOf(appModule, graphQLModule, databaseModule, repositoryModule, coroutinesModule, useCasesModule)
 
 private val repositoryModule = module {
   single<UserRepository> { DefaultUserRepository(get()) }
@@ -71,6 +84,7 @@ private val useCasesModule = module {
 private val appModule = module {
   single<DatabaseFactory> { params -> DefaultDatabaseFactory(databaseConfig = params.get()) }
   single { params -> JwtService(jwtConfig = params.get()) }
+  single { jacksonObjectMapper() }
 
   single {
     Json {
@@ -91,4 +105,24 @@ private val databaseModule = module {
   single<ArticleTagDao> { DefaultArticleTagDao(get()) }
   single<TagDao> { DefaultTagDao(get()) } bind TagDao::class
   single<CommentsDao> { DefaultCommentsDao(get(), get()) }
+}
+
+private val graphQLModule = module {
+  single { KtorGraphQLRequestParser(get()) }
+  single { KtorGraphQLContextFactory() }
+  single {
+    val config = SchemaGeneratorConfig(supportedPackages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common"))
+    val queries = listOf(
+      TopLevelObject(MeQuery()),
+    )
+    val mutations = listOf(
+      TopLevelObject(LoginMutation(get(named("login")), get())),
+      TopLevelObject(RegisterMutation(get(named("register")), get())),
+    )
+    toSchema(config, queries, mutations)
+  }
+
+  factory { GraphQL.newGraphQL(get()).build() }
+  factory { GraphQLRequestHandler(get(), null) }
+  factory { KtorGraphQLServer(get(), get(), get()) }
 }
