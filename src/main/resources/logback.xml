@@ -1,13 +1,8 @@
 <configuration scan="true" scanPeriod="15 seconds">
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <appender name="MDC" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} user=%X{userId} - %msg%n</pattern>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} request-id=%X{mdc-call-id} - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
@@ -21,10 +16,4 @@
     <logger name="io.netty" level="INFO"/>
 
     <logger name="Exposed" level="DEBUG"/> <!--<logger name="Exposed" level="OFF"/> to disable-->
-
-    <logger name="MDCLogger" level="INFO">
-        <appender-ref ref="MDC"/>
-    </logger>
-
-    <logger name="[Koin]" level="DEBUG"/>
 </configuration>

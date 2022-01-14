@@ -3,10 +3,14 @@ package io.skinnydoo.users
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import io.skinnydoo.common.*
+import io.skinnydoo.common.Email
+import io.skinnydoo.common.Password
+import io.skinnydoo.common.Username
+import io.skinnydoo.common.checkPassword
 import io.skinnydoo.common.models.LoginErrors
 import io.skinnydoo.common.models.RegistrationErrors
 import io.skinnydoo.common.models.User
+import io.skinnydoo.common.models.UserAlreadyExist
 
 interface AuthRepository {
   suspend fun register(username: Username, email: Email, password: Password): Either<RegistrationErrors, User>
@@ -23,7 +27,7 @@ class DefaultAuthRepository(
     email: Email,
     password: Password,
   ): Either<RegistrationErrors, User> = if (userDao.userExist(username, email)) {
-    RegistrationErrors.UserAlreadyExist("User exists").left()
+    UserAlreadyExist("User exists").left()
   } else {
     val id = userDao.createFor(username, email, password)
     userFollowerDao.insert(id, id) // self follower

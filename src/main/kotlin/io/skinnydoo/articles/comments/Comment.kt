@@ -1,7 +1,7 @@
 package io.skinnydoo.articles.comments
 
+import io.skinnydoo.common.models.Profile
 import io.skinnydoo.common.serializers.LocalDateTimeSerializer
-import io.skinnydoo.profiles.Profile
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow

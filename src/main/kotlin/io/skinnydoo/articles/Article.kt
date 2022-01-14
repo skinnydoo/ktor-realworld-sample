@@ -1,8 +1,8 @@
 package io.skinnydoo.articles
 
 import io.skinnydoo.articles.tags.Tag
+import io.skinnydoo.common.models.Profile
 import io.skinnydoo.common.serializers.LocalDateTimeSerializer
-import io.skinnydoo.profiles.Profile
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.LocalDateTime

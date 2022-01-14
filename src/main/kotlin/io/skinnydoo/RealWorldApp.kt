@@ -3,8 +3,10 @@ package io.skinnydoo
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
+import io.ktor.http.*
 import io.ktor.locations.*
 import io.ktor.request.*
+import io.ktor.response.*
 import io.ktor.serialization.*
 import io.skinnydoo.articles.comments.registerCommentRoutes
 import io.skinnydoo.articles.registerArticleRoutes
@@ -25,7 +27,7 @@ import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import org.slf4j.event.Level
+import java.util.*
 
 const val API_V1 = "api/v1"
 
@@ -42,10 +44,24 @@ fun Application.module(koinModules: List<Module> = koinModules()) {
 
   dbFactory.connect()
 
-  install(DefaultHeaders) { header("X-Engine", "Ktor") }
+  install(DefaultHeaders)
+  install(AutoHeadResponse)
+  install(CallId) {
+    // Attempt to retrieve a callId from the 'X-Request-ID' header
+    retrieve { call -> call.request.header(HttpHeaders.XRequestId) }
+
+    // If we can't retrieve a callId,
+    // try the 'generate' blocks coalescing until one of them is not null.
+    generate { UUID.randomUUID().toString() }
+
+    // Once a callId is generated, verify is called to check if the retrieved or generated callId String is valid.
+    verify { callId: String -> callId.isNotEmpty() }
+
+    // Update the response with the callId in the specified headerName
+    reply { call, callId -> call.response.header(HttpHeaders.XRequestId, callId) }
+  }
   install(CallLogging) {
-    level = Level.DEBUG
-    filter { call -> call.request.path().startsWith("/") }
+    callIdMdc("mdc-call-id")
   }
   install(ContentNegotiation) { json(json) }
   install(StatusPages) { configure() }

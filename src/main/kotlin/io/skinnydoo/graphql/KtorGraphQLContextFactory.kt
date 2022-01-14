@@ -7,9 +7,9 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class KtorGraphQLContextFactory : GraphQLContextFactory<AuthContext, ApplicationRequest> {
+class KtorGraphQLContextFactory : GraphQLContextFactory<KtorGraphQLAuthService.AuthContext, ApplicationRequest> {
 
-  override suspend fun generateContext(request: ApplicationRequest): AuthContext? = null
+  override suspend fun generateContext(request: ApplicationRequest): KtorGraphQLAuthService.AuthContext? = null
 
   override suspend fun generateContextMap(request: ApplicationRequest): Map<*, Any>? {
     val authHeader = runCatching { request.parseAuthorizationHeader() }

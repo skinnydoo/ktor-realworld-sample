@@ -26,15 +26,13 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: LoginErro
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: UserErrors) = when (error) {
-  is UserErrors.UserNotFound -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
-    call.respond(HttpStatusCode.NotFound, errorBody)
-  }
+suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: UserNotFound) {
+  val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
+  call.respond(HttpStatusCode.NotFound, errorBody)
 }
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: RegistrationErrors) = when (error) {
-  is RegistrationErrors.UserAlreadyExist -> {
+  is UserAlreadyExist -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
   }

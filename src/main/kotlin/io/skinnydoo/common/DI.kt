@@ -15,12 +15,11 @@ import io.skinnydoo.common.db.DatabaseFactory
 import io.skinnydoo.common.db.DatabaseTransactionRunner
 import io.skinnydoo.common.db.DefaultDatabaseFactory
 import io.skinnydoo.common.db.ExposedTransactionRunner
+import io.skinnydoo.graphql.KtorGraphQLAuthService
 import io.skinnydoo.graphql.KtorGraphQLContextFactory
 import io.skinnydoo.graphql.KtorGraphQLRequestParser
 import io.skinnydoo.graphql.KtorGraphQLServer
-import io.skinnydoo.graphql.schema.LoginMutation
-import io.skinnydoo.graphql.schema.MeQueryService
-import io.skinnydoo.graphql.schema.RegisterMutation
+import io.skinnydoo.graphql.schema.*
 import io.skinnydoo.profiles.*
 import io.skinnydoo.users.*
 import kotlinx.coroutines.CoroutineDispatcher
@@ -113,14 +112,18 @@ private val graphQLModule = module {
   single {
     val config = SchemaGeneratorConfig(supportedPackages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common.models"))
     val queries = listOf(
-      TopLevelObject(MeQueryService(get(named("getUserWithId")), get())),
+      TopLevelObject(MeQueryService(get())),
+      TopLevelObject(ProfileQueryService(get(named("getUserProfile")), get())),
     )
     val mutations = listOf(
-      TopLevelObject(LoginMutation(get(named("login")), get())),
-      TopLevelObject(RegisterMutation(get(named("register")), get())),
+      TopLevelObject(LoginMutationService(get(named("login")), get())),
+      TopLevelObject(RegisterMutationService(get(named("register")), get())),
+      TopLevelObject(SelfMutationService(get(named("updateUser")), get())),
+      TopLevelObject(ProfileMutationService(get(named("followUser")), get(named("unfollowUser")), get())),
     )
     toSchema(config, queries, mutations)
   }
+  single { KtorGraphQLAuthService(get(), get(named("getUserWithId"))) }
 
   factory { GraphQL.newGraphQL(get()).build() }
   factory { GraphQLRequestHandler(get(), null) }

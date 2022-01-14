@@ -1,6 +1,5 @@
-package io.skinnydoo.profiles
+package io.skinnydoo.common.models
 
-import io.skinnydoo.common.models.User
 import io.skinnydoo.users.UserTable
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow
@@ -11,7 +10,7 @@ data class Profile(
   val bio: String,
   val image: String?,
   val following: Boolean,
-) {
+) : ProfileResult, ProfileMutationResult {
   companion object {
 
     fun fromUser(user: User, following: Boolean): Profile = Profile(

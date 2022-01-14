@@ -5,12 +5,23 @@ package io.skinnydoo.graphql.schema
 import arrow.core.identity
 import com.expediagroup.graphql.server.operations.Mutation
 import io.skinnydoo.common.*
-import io.skinnydoo.common.models.LoggedInUser
-import io.skinnydoo.common.models.NewUserCredentials
-import io.skinnydoo.common.models.RegisterResult
+import io.skinnydoo.common.models.*
+import io.skinnydoo.users.LoginUser
 import io.skinnydoo.users.RegisterUser
 
-class RegisterMutation(
+class LoginMutationService(
+  private val loginWithEmail: LoginUser,
+  private val jwtService: JwtService,
+) : Mutation {
+
+  suspend fun login(email: String, password: String): LoginResult {
+    return loginWithEmail(UserLoginCredentials(Email(email), Password(password))).map {
+      LoggedInUser.fromUser(it, token = jwtService.generateToken(it))
+    }.fold(::identity, ::identity)
+  }
+}
+
+class RegisterMutationService(
   private val registerUser: RegisterUser,
   private val jwtService: JwtService,
 ) : Mutation {

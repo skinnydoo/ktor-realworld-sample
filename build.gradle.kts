@@ -78,7 +78,8 @@ dependencies {
 
 graphql {
   schema {
-    packages = listOf("io.skinnydoo.graphql")
+    // List of supported packages that can contain GraphQL schema type definitions
+    packages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common.models")
   }
 }
 

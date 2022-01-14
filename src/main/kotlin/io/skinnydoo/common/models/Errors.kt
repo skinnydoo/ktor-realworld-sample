@@ -3,10 +3,7 @@ package io.skinnydoo.common.models
 import io.skinnydoo.common.CommentId
 import io.skinnydoo.common.Slug
 
-typealias UserNotFound = UserErrors.UserNotFound
-
 typealias ArticleNotFound = ArticleErrors.ArticleNotFound
-typealias AuthorNotFound = ArticleErrors.AuthorNotFound
 typealias CommentNotFound = ArticleErrors.CommentNotFound
 
 typealias InvalidSlug = InvalidPropertyError.SlugInvalid
@@ -15,11 +12,14 @@ interface Error {
   val message: String
 }
 
-sealed interface AuthenticationErrors : Error, SelfQueryResult {
-  data class LoginRequired(override val message: String = "You must be logged in") : AuthenticationErrors
-  data class TokenRequired(override val message: String = "Token is required") : AuthenticationErrors
-  data class InvalidToken(override val message: String = "Invalid token") : AuthenticationErrors
-}
+sealed interface AuthenticationErrors : Error, SelfQueryResult, UpdateSelfResult, ProfileMutationResult
+data class Unauthorized(override val message: String) : AuthenticationErrors
+data class TokenRequired(override val message: String) : AuthenticationErrors
+data class TokenExpired(override val message: String) : AuthenticationErrors
+data class TokenInvalid(override val message: String) : AuthenticationErrors
+
+data class UserNotFound(override val message: String = "User not found") : Error, SelfQueryResult, UpdateSelfResult,
+  ProfileResult, ProfileMutationResult
 
 sealed interface CommonErrors : ArticleErrors
 data class ServerError(val message: String = "Something went wrong") : CommonErrors
@@ -30,13 +30,8 @@ sealed interface LoginErrors : Error, LoginResult {
   data class PasswordInvalid(override val message: String) : LoginErrors
 }
 
-sealed interface RegistrationErrors : Error, RegisterResult {
-  data class UserAlreadyExist(override val message: String) : RegistrationErrors
-}
-
-sealed interface UserErrors : Error, SelfQueryResult {
-  data class UserNotFound(override val message: String = "User not found") : UserErrors
-}
+sealed interface RegistrationErrors : Error, RegisterResult
+data class UserAlreadyExist(override val message: String) : RegistrationErrors
 
 sealed interface ArticleErrors {
   data class ArticleNotFound(val slug: Slug) : ArticleErrors

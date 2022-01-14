@@ -9,7 +9,7 @@ import io.skinnydoo.articles.tags.TagDao
 import io.skinnydoo.articles.tags.TagTable
 import io.skinnydoo.common.*
 import io.skinnydoo.common.db.DatabaseTransactionRunner
-import io.skinnydoo.profiles.Profile
+import io.skinnydoo.common.models.Profile
 import io.skinnydoo.users.FollowerTable
 import io.skinnydoo.users.UserFollowerDao
 import io.skinnydoo.users.UserTable
