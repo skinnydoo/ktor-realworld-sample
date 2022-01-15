@@ -2,6 +2,7 @@ package io.skinnydoo.articles.tags
 
 import arrow.core.Either
 import io.skinnydoo.common.models.ServerError
+import io.skinnydoo.common.models.Tag
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 

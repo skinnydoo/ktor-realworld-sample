@@ -4,12 +4,11 @@ import arrow.core.Option
 import arrow.core.none
 import arrow.core.some
 import io.skinnydoo.articles.ArticleTable.slug
-import io.skinnydoo.articles.tags.Tag
 import io.skinnydoo.articles.tags.TagDao
 import io.skinnydoo.articles.tags.TagTable
 import io.skinnydoo.common.*
 import io.skinnydoo.common.db.DatabaseTransactionRunner
-import io.skinnydoo.common.models.Profile
+import io.skinnydoo.common.models.*
 import io.skinnydoo.users.FollowerTable
 import io.skinnydoo.users.UserFollowerDao
 import io.skinnydoo.users.UserTable

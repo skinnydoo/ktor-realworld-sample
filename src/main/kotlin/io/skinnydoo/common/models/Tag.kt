@@ -1,4 +1,4 @@
-package io.skinnydoo.articles.tags
+package io.skinnydoo.common.models
 
 import kotlinx.serialization.Serializable
 

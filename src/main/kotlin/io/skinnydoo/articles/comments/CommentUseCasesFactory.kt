@@ -5,6 +5,8 @@ import io.skinnydoo.common.CommentId
 import io.skinnydoo.common.Slug
 import io.skinnydoo.common.UserId
 import io.skinnydoo.common.models.ArticleErrors
+import io.skinnydoo.common.models.Comment
+import io.skinnydoo.common.models.NewComment
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 

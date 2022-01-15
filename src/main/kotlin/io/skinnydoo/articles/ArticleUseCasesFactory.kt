@@ -1,11 +1,8 @@
 package io.skinnydoo.articles
 
 import arrow.core.Either
-import io.skinnydoo.articles.tags.Tag
 import io.skinnydoo.common.*
-import io.skinnydoo.common.models.ArticleErrors
-import io.skinnydoo.common.models.CommonErrors
-import io.skinnydoo.common.models.ServerError
+import io.skinnydoo.common.models.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -14,9 +11,9 @@ typealias AddArticleUseCase = suspend (NewArticle, UserId) -> Either<ServerError
 typealias GetArticleWithSlugUseCase = suspend (Slug, UserId?) -> Either<ArticleErrors, Article>
 
 typealias GetAllArticlesUseCase =
-  suspend (UserId?, Tag?, Username?, favoritedBy: Username?, Limit, Offset) -> Either<CommonErrors, List<Article>>
+  suspend (UserId?, Tag?, Username?, favoritedBy: Username?, Limit, Offset) -> Either<ServerError, List<Article>>
 
-typealias GetFeedArticlesUseCase = suspend (UserId, Limit, Offset) -> Either<CommonErrors, List<Article>>
+typealias GetFeedArticlesUseCase = suspend (UserId, Limit, Offset) -> Either<ServerError, List<Article>>
 
 typealias UpdateArticleUseCase = suspend (Slug, UpdateArticleDetails, UserId) -> Either<ArticleErrors, Article>
 

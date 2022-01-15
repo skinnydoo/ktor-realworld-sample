@@ -1,6 +1,7 @@
-package io.skinnydoo.articles.comments
+package io.skinnydoo.common.models
 
-import io.skinnydoo.common.models.Profile
+import com.expediagroup.graphql.generator.annotations.GraphQLType
+import io.skinnydoo.articles.comments.CommentTable
 import io.skinnydoo.common.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,8 +13,10 @@ data class Comment(
   val id: Int,
   val body: String,
   val author: Profile,
+  @GraphQLType("DateTime")
   @Serializable(LocalDateTimeSerializer::class)
   val createdAt: LocalDateTime,
+  @GraphQLType("DateTime")
   @Serializable(LocalDateTimeSerializer::class)
   val updatedAt: LocalDateTime,
 ) {

@@ -4,6 +4,8 @@ import io.skinnydoo.articles.ArticleTagTable
 import io.skinnydoo.articles.tags.TagTable.tag
 import io.skinnydoo.common.Slug
 import io.skinnydoo.common.db.DatabaseTransactionRunner
+import io.skinnydoo.common.models.Tag
+import io.skinnydoo.common.models.TagId
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select

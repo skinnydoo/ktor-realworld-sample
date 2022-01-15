@@ -3,6 +3,8 @@ package io.skinnydoo.articles.tags
 import arrow.core.Either
 import io.skinnydoo.common.Slug
 import io.skinnydoo.common.models.ServerError
+import io.skinnydoo.common.models.Tag
+import io.skinnydoo.common.models.TagId
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

@@ -12,7 +12,9 @@ interface Error {
   val message: String
 }
 
-sealed interface AuthenticationErrors : Error, SelfQueryResult, UpdateSelfResult, ProfileMutationResult
+sealed interface AuthenticationErrors : Error, SelfQueryResult, UpdateSelfResult, ProfileMutationResult,
+  ArticleFeedResult
+
 data class Unauthorized(override val message: String) : AuthenticationErrors
 data class TokenRequired(override val message: String) : AuthenticationErrors
 data class TokenExpired(override val message: String) : AuthenticationErrors
@@ -21,9 +23,11 @@ data class TokenInvalid(override val message: String) : AuthenticationErrors
 data class UserNotFound(override val message: String = "User not found") : Error, SelfQueryResult, UpdateSelfResult,
   ProfileResult, ProfileMutationResult
 
-sealed interface CommonErrors : ArticleErrors
-data class ServerError(val message: String = "Something went wrong") : CommonErrors
-object Forbidden : CommonErrors
+sealed interface AuthorizationErrors : Error, ArticleErrors
+data class Forbidden(override val message: String) : AuthorizationErrors
+
+data class ServerError(override val message: String = "Something went wrong") : Error, ArticleErrors, ArticleListResult,
+  ArticleFeedResult
 
 sealed interface LoginErrors : Error, LoginResult {
   data class EmailUnknown(override val message: String) : LoginErrors

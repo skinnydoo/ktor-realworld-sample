@@ -2,12 +2,13 @@
 
 package io.skinnydoo.common
 
+import com.expediagroup.graphql.generator.SchemaGenerator
 import com.expediagroup.graphql.generator.SchemaGeneratorConfig
 import com.expediagroup.graphql.generator.TopLevelObject
-import com.expediagroup.graphql.generator.toSchema
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.GraphQL
+import graphql.schema.GraphQLSchema
 import io.skinnydoo.articles.*
 import io.skinnydoo.articles.comments.*
 import io.skinnydoo.articles.tags.*
@@ -19,6 +20,7 @@ import io.skinnydoo.graphql.KtorGraphQLAuthService
 import io.skinnydoo.graphql.KtorGraphQLContextFactory
 import io.skinnydoo.graphql.KtorGraphQLRequestParser
 import io.skinnydoo.graphql.KtorGraphQLServer
+import io.skinnydoo.graphql.scalars.Scalars
 import io.skinnydoo.graphql.schema.*
 import io.skinnydoo.profiles.*
 import io.skinnydoo.users.*
@@ -109,11 +111,16 @@ private val databaseModule = module {
 private val graphQLModule = module {
   single { KtorGraphQLRequestParser(get()) }
   single { KtorGraphQLContextFactory() }
-  single {
-    val config = SchemaGeneratorConfig(supportedPackages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common.models"))
+  single<GraphQLSchema> {
+    val config = SchemaGeneratorConfig(
+      supportedPackages = listOf("io.skinnydoo.graphql", "io.skinnydoo.common.models"),
+      additionalTypes = setOf(Scalars.GraphQLLong, Scalars.GraphQLDateTime)
+    )
     val queries = listOf(
       TopLevelObject(MeQueryService(get())),
       TopLevelObject(ProfileQueryService(get(named("getUserProfile")), get())),
+      TopLevelObject(TagsQuery(get(named("tags")))),
+      TopLevelObject(ArticleQueryService(get(named("allArticles")), get(named("feed")), get())),
     )
     val mutations = listOf(
       TopLevelObject(LoginMutationService(get(named("login")), get())),
@@ -121,7 +128,7 @@ private val graphQLModule = module {
       TopLevelObject(SelfMutationService(get(named("updateUser")), get())),
       TopLevelObject(ProfileMutationService(get(named("followUser")), get(named("unfollowUser")), get())),
     )
-    toSchema(config, queries, mutations)
+    SchemaGenerator(config).use { it.generateSchema(queries, mutations) }
   }
   single { KtorGraphQLAuthService(get(), get(named("getUserWithId"))) }
 

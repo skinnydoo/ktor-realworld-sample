@@ -7,6 +7,8 @@ import io.skinnydoo.common.CommentId
 import io.skinnydoo.common.Slug
 import io.skinnydoo.common.UserId
 import io.skinnydoo.common.db.DatabaseTransactionRunner
+import io.skinnydoo.common.models.Comment
+import io.skinnydoo.common.models.NewComment
 import io.skinnydoo.common.models.Profile
 import io.skinnydoo.users.UserFollowerDao
 import io.skinnydoo.users.UserTable

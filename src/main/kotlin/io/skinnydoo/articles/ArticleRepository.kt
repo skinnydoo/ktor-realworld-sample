@@ -1,7 +1,6 @@
 package io.skinnydoo.articles
 
 import arrow.core.*
-import io.skinnydoo.articles.tags.Tag
 import io.skinnydoo.articles.tags.TagRepository
 import io.skinnydoo.common.*
 import io.skinnydoo.common.models.*
@@ -24,14 +23,14 @@ interface ArticleRepository {
     userId: UserId? = null,
     limit: Limit = Limit.default,
     offset: Offset = Offset.default,
-  ): Either<CommonErrors, List<Article>>
+  ): Either<ServerError, List<Article>>
 
   suspend fun updateArticle(slug: Slug, details: UpdateArticleDetails, userId: UserId): Either<ArticleErrors, Article>
 
   /**
    * Get most recent articles from users you follow.
    */
-  suspend fun feed(limit: Limit, offset: Offset, userId: UserId): Either<CommonErrors, List<Article>>
+  suspend fun feed(limit: Limit, offset: Offset, userId: UserId): Either<ServerError, List<Article>>
 
   suspend fun favorArticle(slug: Slug, userId: UserId): Either<ArticleErrors, Article>
   suspend fun unFavorArticle(slug: Slug, userId: UserId): Either<ArticleErrors, Article>
@@ -67,7 +66,7 @@ class DefaultArticleRepository(
     userId: UserId,
   ): Either<ArticleErrors, Article> = articleDao.isSameAuthor(slug, userId)
     .toEither { ArticleNotFound(slug) }
-    .flatMap { same -> if (!same) Forbidden.left() else Unit.right() }
+    .flatMap { same -> if (!same) Forbidden("This operation is not allowed").left() else Unit.right() }
     .tap { articleDao.update(slug, details) }
     .map { articleDao.find(slug, userId) }
     .leftIfNull { ServerError() }
@@ -84,7 +83,7 @@ class DefaultArticleRepository(
     userId: UserId?,
     limit: Limit,
     offset: Offset,
-  ): Either<CommonErrors, List<Article>> {
+  ): Either<ServerError, List<Article>> {
     return Either.catch { articleDao.getArticlesFilterBy(tag, author, favoritedBy, userId, limit, offset) }
       .tapLeft { logger.error(it) { } }
       .mapLeft { ServerError(it.localizedMessage) }
@@ -94,7 +93,7 @@ class DefaultArticleRepository(
     limit: Limit,
     offset: Offset,
     userId: UserId,
-  ): Either<CommonErrors, List<Article>> {
+  ): Either<ServerError, List<Article>> {
     return Either.catch { articleDao.getArticlesFromFollowedAuthorOnly(userId, limit, offset) }
       .tapLeft { logger.error(it) { } }
       .mapLeft { ServerError(it.localizedMessage) }
@@ -105,7 +104,7 @@ class DefaultArticleRepository(
     userId: UserId,
   ): Either<ArticleErrors, Unit> = articleDao.isSameAuthor(slug, userId)
     .toEither { ArticleNotFound(slug) }
-    .flatMap { same -> if (!same) Forbidden.left() else Unit.right() }
+    .flatMap { same -> if (!same) Forbidden("This operation is not allowed").left() else Unit.right() }
     .tap { articleDao.delete(slug) }
 
   override suspend fun favorArticle(slug: Slug, userId: UserId): Either<ArticleErrors, Article> {

@@ -5,7 +5,9 @@ import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
 import io.skinnydoo.articles.ArticleDao
-import io.skinnydoo.common.*
+import io.skinnydoo.common.CommentId
+import io.skinnydoo.common.Slug
+import io.skinnydoo.common.UserId
 import io.skinnydoo.common.models.*
 import mu.KotlinLogging
 
@@ -50,7 +52,7 @@ class DefaultCommentRepository(
   ): Either<ArticleErrors, Unit> = if (articleDao.exists(slug)) {
     commentsDao.sameAuthor(commentId, userId)
       .toEither { CommentNotFound(commentId) }
-      .flatMap { same -> if (!same) Forbidden.left() else Unit.right() }
+      .flatMap { same -> if (!same) Forbidden("This operation is not allowed").left() else Unit.right() }
       .tap { commentsDao.delete(slug, commentId) }
       .tap { logger.info { "Successfully remove comment with [RecordID: $commentId]" } }
   } else ArticleNotFound(slug).left()

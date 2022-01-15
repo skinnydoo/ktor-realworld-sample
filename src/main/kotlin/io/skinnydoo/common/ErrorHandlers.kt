@@ -44,7 +44,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ArticleEr
     call.respond(HttpStatusCode.NotFound, errorBody)
   }
   ArticleErrors.AuthorNotFound -> call.respond(HttpStatusCode.InternalServerError)
-  Forbidden -> call.respond(HttpStatusCode.Unauthorized)
+  is Forbidden -> call.respond(HttpStatusCode.Unauthorized)
   is ServerError -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.InternalServerError, errorBody)
@@ -62,10 +62,11 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: InvalidPr
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: CommonErrors) = when (error) {
-  is ServerError -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
-    call.respond(HttpStatusCode.InternalServerError, errorBody)
-  }
-  Forbidden -> call.respond(HttpStatusCode.Unauthorized)
+suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ServerError) {
+  val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
+  call.respond(HttpStatusCode.InternalServerError, errorBody)
+}
+
+suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: AuthorizationErrors) = when (error) {
+  is Forbidden -> call.respond(HttpStatusCode.Unauthorized)
 }

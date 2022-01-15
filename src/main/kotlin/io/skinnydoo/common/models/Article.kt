@@ -1,7 +1,7 @@
-package io.skinnydoo.articles
+package io.skinnydoo.common.models
 
-import io.skinnydoo.articles.tags.Tag
-import io.skinnydoo.common.models.Profile
+import com.expediagroup.graphql.generator.annotations.GraphQLType
+import io.skinnydoo.articles.ArticleTable
 import io.skinnydoo.common.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.ResultRow
@@ -13,12 +13,15 @@ data class Article(
   val title: String,
   val description: String,
   val body: String,
-  val tagList: List<Tag>,
+  val tagList: List<String>,
   val favorited: Boolean,
+  @GraphQLType("Long")
   val favoritesCount: Long,
   val author: Profile,
+  @GraphQLType("DateTime")
   @Serializable(with = LocalDateTimeSerializer::class)
   val createdAt: LocalDateTime,
+  @GraphQLType("DateTime")
   @Serializable(with = LocalDateTimeSerializer::class)
   val updatedAt: LocalDateTime,
 ) {
@@ -36,7 +39,7 @@ data class Article(
         title = rr[ArticleTable.title],
         description = rr[ArticleTable.description],
         body = rr[ArticleTable.body],
-        tagList = tags,
+        tagList = tags.map(Tag::value),
         favoritesCount = favoritesCount,
         favorited = favorited,
         author = author,
