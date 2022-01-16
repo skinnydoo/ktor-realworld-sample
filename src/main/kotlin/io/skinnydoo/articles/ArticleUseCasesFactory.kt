@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 
 typealias AddArticleUseCase = suspend (NewArticle, UserId) -> Either<ServerError, Article>
 
-typealias GetArticleWithSlugUseCase = suspend (Slug, UserId?) -> Either<ArticleErrors, Article>
+typealias GetArticleWithSlugUseCase = suspend (Slug, UserId?) -> Either<ArticleNotFound, Article>
 
 typealias GetAllArticlesUseCase =
   suspend (UserId?, Tag?, Username?, favoritedBy: Username?, Limit, Offset) -> Either<ServerError, List<Article>>

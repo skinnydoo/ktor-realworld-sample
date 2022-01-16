@@ -40,17 +40,16 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: Registrat
 
 suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ArticleErrors) = when (error) {
   is ArticleErrors.ArticleNotFound -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Article with slug ${error.slug} does not exist")))
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.NotFound, errorBody)
   }
-  ArticleErrors.AuthorNotFound -> call.respond(HttpStatusCode.InternalServerError)
   is Forbidden -> call.respond(HttpStatusCode.Unauthorized)
   is ServerError -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.InternalServerError, errorBody)
   }
   is ArticleErrors.CommentNotFound -> {
-    val errorBody = ErrorEnvelope(mapOf("body" to listOf("Comment with id ${error.commentId} does not exist")))
+    val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.NotFound, errorBody)
   }
 }

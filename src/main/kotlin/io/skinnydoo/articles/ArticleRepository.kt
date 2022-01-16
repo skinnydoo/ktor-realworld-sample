@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger {}
 
 interface ArticleRepository {
   suspend fun add(article: NewArticle, userId: UserId): Either<ServerError, Article>
-  suspend fun get(slug: Slug, userId: UserId?): Either<ArticleErrors, Article>
+  suspend fun get(slug: Slug, userId: UserId?): Either<ArticleNotFound, Article>
   suspend fun remove(slug: Slug, userId: UserId): Either<ArticleErrors, Unit>
   suspend fun getArticlesFilterBy(
     tag: Tag? = null,
@@ -65,7 +65,7 @@ class DefaultArticleRepository(
     details: UpdateArticleDetails,
     userId: UserId,
   ): Either<ArticleErrors, Article> = articleDao.isSameAuthor(slug, userId)
-    .toEither { ArticleNotFound(slug) }
+    .toEither { ArticleNotFound("Article with slug $slug does not exist") }
     .flatMap { same -> if (!same) Forbidden("This operation is not allowed").left() else Unit.right() }
     .tap { articleDao.update(slug, details) }
     .map { articleDao.find(slug, userId) }
@@ -74,7 +74,8 @@ class DefaultArticleRepository(
   override suspend fun get(
     slug: Slug,
     userId: UserId?,
-  ): Either<ArticleErrors, Article> = articleDao.find(slug, userId)?.right() ?: ArticleNotFound(slug).left()
+  ): Either<ArticleNotFound, Article> = articleDao.find(slug, userId)?.right()
+    ?: ArticleNotFound("Article with slug $slug does not exist").left()
 
   override suspend fun getArticlesFilterBy(
     tag: Tag?,
@@ -103,7 +104,7 @@ class DefaultArticleRepository(
     slug: Slug,
     userId: UserId,
   ): Either<ArticleErrors, Unit> = articleDao.isSameAuthor(slug, userId)
-    .toEither { ArticleNotFound(slug) }
+    .toEither { ArticleNotFound("Article with slug $slug does not exist") }
     .flatMap { same -> if (!same) Forbidden("This operation is not allowed").left() else Unit.right() }
     .tap { articleDao.delete(slug) }
 
@@ -112,7 +113,7 @@ class DefaultArticleRepository(
       favoriteArticleDao.insert(slug, userId)
       logger.info { "Successfully favor article [RecordID: $slug]" }
       get(slug, userId)
-    } else ArticleNotFound(slug).left()
+    } else ArticleNotFound("Article with slug $slug does not exist").left()
   }
 
   override suspend fun unFavorArticle(
@@ -122,5 +123,5 @@ class DefaultArticleRepository(
     favoriteArticleDao.delete(slug)
     logger.info { "Successfully un-favor article [RecordID: $slug]" }
     get(slug, userId)
-  } else ArticleNotFound(slug).left()
+  } else ArticleNotFound("Article with slug $slug does not exist").left()
 }

@@ -5,18 +5,17 @@ package io.skinnydoo.graphql.schema
 import arrow.core.flatMap
 import arrow.core.getOrElse
 import arrow.core.merge
+import arrow.core.zip
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
+import com.expediagroup.graphql.server.operations.Mutation
 import com.expediagroup.graphql.server.operations.Query
 import graphql.schema.DataFetchingEnvironment
-import io.skinnydoo.articles.GetAllArticlesUseCase
-import io.skinnydoo.articles.GetFeedArticlesUseCase
+import io.skinnydoo.articles.*
 import io.skinnydoo.common.Limit
 import io.skinnydoo.common.Offset
+import io.skinnydoo.common.Slug
 import io.skinnydoo.common.Username
-import io.skinnydoo.common.models.Article
-import io.skinnydoo.common.models.ArticleFeedResult
-import io.skinnydoo.common.models.ArticleListResult
-import io.skinnydoo.common.models.Tag
+import io.skinnydoo.common.models.*
 import io.skinnydoo.graphql.KtorGraphQLAuthService
 import io.skinnydoo.graphql.invoke
 
@@ -25,9 +24,20 @@ data class ArticleListPayload(
   val articlesCount: Int,
 ) : ArticleListResult, ArticleFeedResult
 
+data class ArticleDetails(
+  val title: String,
+  val description: String,
+  val body: String,
+  val tagList: List<String>,
+)
+
+@JvmInline
+value class Deleted(val value: Boolean) : DeleteArticleResult
+
 class ArticleQueryService(
   private val getAllArticles: GetAllArticlesUseCase,
   private val feedArticles: GetFeedArticlesUseCase,
+  private val getArticleWithSlug: GetArticleWithSlugUseCase,
   private val authService: KtorGraphQLAuthService,
 ) : Query {
 
@@ -63,5 +73,71 @@ class ArticleQueryService(
       feedArticles(user.id, theLimit, theOffset)
     }
     .map { ArticleListPayload(it, it.size) }
+    .merge()
+
+  suspend fun article(slug: String, dfe: DataFetchingEnvironment): ArticleResult {
+    val user = authService(dfe.graphQlContext["auth"]).orNull()
+
+    return Slug.fromString(slug)
+      .toEither { InvalidSlug("Invalid SLUG string: $slug") }
+      .flatMap { getArticleWithSlug(it, user?.id) }
+      .merge()
+  }
+}
+
+class ArticleMutationService(
+  private val addArticleUseCase: AddArticleUseCase,
+  private val updateArticleUseCase: UpdateArticleUseCase,
+  private val deleteArticleUseCase: DeleteArticleUseCase,
+  private val authService: KtorGraphQLAuthService,
+) : Mutation {
+
+  suspend fun createArticle(
+    details: ArticleDetails,
+    dfe: DataFetchingEnvironment,
+  ): CreateArticleResult = authService(dfe.graphQlContext["auth"])
+    .flatMap { user ->
+      val newArticle = NewArticle(title = details.title,
+        description = details.description,
+        body = details.body,
+        tagList = details.tagList.map(::Tag)
+      )
+      addArticleUseCase(newArticle, user.id)
+    }
+    .merge()
+
+  suspend fun updateArticle(
+    slug: String,
+    details: UpdateArticleDetails,
+    dfe: DataFetchingEnvironment,
+  ): UpdateArticleResult = authService(dfe.graphQlContext["auth"])
+    .zip(Slug.fromString(slug).toEither { InvalidSlug("Invalid SLUG string: $slug") })
+    .flatMap { (user, slug) ->
+      updateArticleUseCase(slug, details, user.id).mapLeft {
+        when (it) {
+          is ArticleErrors.ArticleNotFound -> it
+          is Forbidden -> it
+          is ServerError -> it
+          is ArticleErrors.CommentNotFound -> ServerError("Something went wrong")
+        }
+      }
+    }.merge()
+
+  suspend fun deleteArticle(
+    slug: String,
+    dfe: DataFetchingEnvironment,
+  ): DeleteArticleResult = authService(dfe.graphQlContext["auth"])
+    .zip(Slug.fromString(slug).toEither { InvalidSlug("Invalid SLUG string: $slug") })
+    .flatMap { (user, slug) ->
+      deleteArticleUseCase(slug, user.id).mapLeft {
+        when (it) {
+          is ArticleErrors.ArticleNotFound -> it
+          is Forbidden -> it
+          is ServerError -> it
+          is ArticleErrors.CommentNotFound -> ServerError("Something went wrong")
+        }
+      }
+    }
+    .map { Deleted(true) }
     .merge()
 }

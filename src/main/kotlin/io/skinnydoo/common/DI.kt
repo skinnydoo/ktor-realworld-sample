@@ -120,13 +120,24 @@ private val graphQLModule = module {
       TopLevelObject(MeQueryService(get())),
       TopLevelObject(ProfileQueryService(get(named("getUserProfile")), get())),
       TopLevelObject(TagsQuery(get(named("tags")))),
-      TopLevelObject(ArticleQueryService(get(named("allArticles")), get(named("feed")), get())),
+      TopLevelObject(ArticleQueryService(
+        getAllArticles = get(named("allArticles")),
+        feedArticles = get(named("feed")),
+        getArticleWithSlug = get(named("getArticle")),
+        authService = get())
+      ),
     )
     val mutations = listOf(
       TopLevelObject(LoginMutationService(get(named("login")), get())),
       TopLevelObject(RegisterMutationService(get(named("register")), get())),
       TopLevelObject(SelfMutationService(get(named("updateUser")), get())),
       TopLevelObject(ProfileMutationService(get(named("followUser")), get(named("unfollowUser")), get())),
+      TopLevelObject(ArticleMutationService(
+        addArticleUseCase = get(named("addArticle")),
+        updateArticleUseCase = get(named("updateArticle")),
+        deleteArticleUseCase = get(named("deleteArticle")),
+        get()
+      ))
     )
     SchemaGenerator(config).use { it.generateSchema(queries, mutations) }
   }

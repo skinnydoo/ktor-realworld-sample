@@ -56,8 +56,8 @@ fun Route.allArticles() {
 
   authenticate("auth-jwt", optional = true) {
     get<ArticlesRoute> { params ->
-      val selfId = call.principal<User>()?.id
 
+      val selfId = call.principal<User>()?.id
       val tag = params.tag.ifEmpty { null }?.let(::Tag)
       val favoritedBy = params.favorited.ifEmpty { null }?.let(::Username)
       val username = params.author.ifEmpty { null }?.let(::Username)

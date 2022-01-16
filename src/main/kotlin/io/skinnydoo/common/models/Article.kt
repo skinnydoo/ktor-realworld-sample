@@ -24,7 +24,7 @@ data class Article(
   @GraphQLType("DateTime")
   @Serializable(with = LocalDateTimeSerializer::class)
   val updatedAt: LocalDateTime,
-) {
+) : ArticleResult, CreateArticleResult, UpdateArticleResult {
 
   companion object {
     fun fromRow(

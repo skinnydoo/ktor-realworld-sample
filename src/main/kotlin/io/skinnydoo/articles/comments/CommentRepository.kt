@@ -29,7 +29,7 @@ class DefaultCommentRepository(
     userId: UserId?,
   ): Either<ArticleErrors, List<Comment>> {
     return if (articleDao.exists(slug)) commentsDao.getAll(slug, userId).right()
-    else ArticleNotFound(slug).left()
+    else ArticleNotFound("Article with slug $slug does not exist").left()
   }
 
   override suspend fun add(
@@ -42,7 +42,7 @@ class DefaultCommentRepository(
       logger.info { "Successfully create new comment [RecordID: $commentId]" }
       commentsDao.get(commentId, userId)
         .toEither { ServerError() }
-    } else ArticleNotFound(slug).left()
+    } else ArticleNotFound("Article with slug $slug does not exist").left()
   }
 
   override suspend fun remove(
@@ -51,9 +51,9 @@ class DefaultCommentRepository(
     userId: UserId,
   ): Either<ArticleErrors, Unit> = if (articleDao.exists(slug)) {
     commentsDao.sameAuthor(commentId, userId)
-      .toEither { CommentNotFound(commentId) }
+      .toEither { CommentNotFound("Comment with id $commentId does not exist") }
       .flatMap { same -> if (!same) Forbidden("This operation is not allowed").left() else Unit.right() }
       .tap { commentsDao.delete(slug, commentId) }
       .tap { logger.info { "Successfully remove comment with [RecordID: $commentId]" } }
-  } else ArticleNotFound(slug).left()
+  } else ArticleNotFound("Article with slug $slug does not exist").left()
 }
