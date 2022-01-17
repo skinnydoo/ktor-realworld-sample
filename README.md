@@ -6,7 +6,6 @@
 
 This codebase was created to familiarize myself with Ktor, as well as the [graphql-kotlin](https://opensource.expediagroup.com/graphql-kotlin/docs/) library. It is not intended to be production ready, but it includes CRUD operations, authentication, routing, pagination, and more.
 
-We've gone to great lengths to adhere to the Kotlin community styleguides & best practices.
 
 For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
