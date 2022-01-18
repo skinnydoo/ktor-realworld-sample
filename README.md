@@ -4,14 +4,14 @@
 
 ## [RealWorld](https://realworld-docs.netlify.app)
 
-This codebase was created to familiarize myself with Ktor, as well as the [graphql-kotlin](https://opensource.expediagroup.com/graphql-kotlin/docs/) library. It is not intended to be production ready, but it includes CRUD operations, authentication, routing, pagination, and more.
+This codebase was created to familiarize myself with Ktor, as well as the [graphql-kotlin](https://opensource.expediagroup.com/graphql-kotlin/docs/) library. It includes CRUD operations, authentication, routing, pagination, and more.
 
 
 For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
 # Overview
 
-## What tools/frameworks are we using?
+## What tools & frameworks are we using?
 
 - [**Kotlin 1.6**](https://kotlinlang.org) - our language of choice
 - [**Gradle (with Kotlin DSL)**](https://github.com/gradle/gradle) - our build tool of choice
@@ -27,7 +27,7 @@ For more information on how to this works with other frontends/backends, head ov
 
 ## Architecture Overview
 
-The application uses a **package-by-feature** structure with the following folders:
+The application uses a **package-by-feature** structure with the following packages:
 1. `common`: contains technical configuration classes (e.g. for DI, database connection, connection pooling, logging, etc)
 2. `users`: contains user related routes, domain models, entities and business logic
 3. `articles`: contains article related routes, domain models, types and business logic
