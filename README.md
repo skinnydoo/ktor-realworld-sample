@@ -57,3 +57,10 @@ and fill up some essential fields:
 
 You should be able to run/debug your app now.
 
+## License & Credits
+Credits have to go out to [Thinkster](https://thinkster.io/) with their awesome [RealWorld](https://github.com/gothinkster/realworld) 
+
+This project is licensed under the MIT license.
+
+## Disclaimer
+This source and the whole package comes without warranty. It may or may not harm your computer. Please use with care. Any damage cannot be related back to the author.
