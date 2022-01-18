@@ -2,8 +2,8 @@ package io.skinnydoo.articles.tags
 
 import io.skinnydoo.articles.ArticleTagTable
 import io.skinnydoo.articles.tags.TagTable.tag
-import io.skinnydoo.common.DatabaseTransactionRunner
 import io.skinnydoo.common.Slug
+import io.skinnydoo.common.db.DatabaseTransactionRunner
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select

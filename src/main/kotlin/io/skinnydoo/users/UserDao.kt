@@ -1,11 +1,7 @@
 package io.skinnydoo.users
 
-import io.skinnydoo.common.DatabaseTransactionRunner
-import io.skinnydoo.common.Email
-import io.skinnydoo.common.Password
-import io.skinnydoo.common.UserId
-import io.skinnydoo.common.Username
-import io.skinnydoo.common.isNotEmpty
+import io.skinnydoo.common.*
+import io.skinnydoo.common.db.DatabaseTransactionRunner
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select

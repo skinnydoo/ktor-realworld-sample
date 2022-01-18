@@ -46,7 +46,13 @@ object Deps {
   }
 
   object Testing {
-    const val serverTest = "io.ktor:ktor-server-tests:${Versions.ktor}"
-    const val ktTest = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlin}"
+    const val coroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlin}"
+    const val serverTest = "io.ktor:ktor-server-test-host:${Versions.ktor}"
+    const val kotestJunit5 = "io.kotest:kotest-runner-junit5:${Versions.kotest}"
+    const val kotestAssertionsCore = "io.kotest:kotest-assertions-core:${Versions.kotest}"
+    const val kotestAssertionsJson = "io.kotest:kotest-assertions-json:${Versions.kotest}"
+    const val kotestAssertionsKtor = "io.kotest.extensions:kotest-assertions-ktor:1.0.3"
+    const val kotestAssertionsArrow = "io.kotest.extensions:kotest-assertions-arrow:1.2.1"
+    const val h2 = "com.h2database:h2:${Versions.h2}"
   }
 }

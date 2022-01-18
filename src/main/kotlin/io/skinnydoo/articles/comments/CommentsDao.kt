@@ -4,9 +4,9 @@ import arrow.core.Option
 import arrow.core.none
 import arrow.core.some
 import io.skinnydoo.common.CommentId
-import io.skinnydoo.common.DatabaseTransactionRunner
 import io.skinnydoo.common.Slug
 import io.skinnydoo.common.UserId
+import io.skinnydoo.common.db.DatabaseTransactionRunner
 import io.skinnydoo.profiles.Profile
 import io.skinnydoo.users.UserFollowerDao
 import io.skinnydoo.users.UserTable

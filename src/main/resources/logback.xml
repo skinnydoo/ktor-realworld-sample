@@ -25,4 +25,6 @@
     <logger name="MDCLogger" level="INFO">
         <appender-ref ref="MDC"/>
     </logger>
+
+    <logger name="[Koin]" level="DEBUG"/>
 </configuration>
