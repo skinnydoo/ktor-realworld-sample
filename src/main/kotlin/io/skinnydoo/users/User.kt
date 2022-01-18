@@ -1,6 +1,6 @@
 package io.skinnydoo.users
 
-import io.ktor.auth.Principal
+import io.ktor.auth.*
 import io.skinnydoo.common.Email
 import io.skinnydoo.common.Password
 import io.skinnydoo.common.UserId
@@ -35,7 +35,7 @@ data class LoggedInUser(
   val token: String,
   val username: String,
   val bio: String,
-  val image: String?,
+  val image: String,
 ) {
 
   companion object {
@@ -45,7 +45,7 @@ data class LoggedInUser(
         token = token,
         username = user.username,
         bio = user.bio,
-        image = user.image
+        image = user.image.orEmpty().ifEmpty { "https://picsum.photos/300" }
       )
     }
   }
