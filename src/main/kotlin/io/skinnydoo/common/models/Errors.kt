@@ -1,8 +1,5 @@
 package io.skinnydoo.common.models
 
-typealias ArticleNotFound = ArticleErrors.ArticleNotFound
-typealias CommentNotFound = ArticleErrors.CommentNotFound
-
 typealias InvalidSlug = InvalidPropertyError.SlugInvalid
 
 interface Error {
@@ -10,7 +7,7 @@ interface Error {
 }
 
 sealed interface AuthenticationErrors : Error, SelfQueryResult, UpdateSelfResult, ProfileMutationResult,
-  ArticleFeedResult, CreateArticleResult, UpdateArticleResult, DeleteArticleResult
+  ArticleFeedResult, CreateArticleResult, ArticleMutationResult, DeleteArticleResult
 
 data class Unauthorized(override val message: String) : AuthenticationErrors
 data class TokenRequired(override val message: String) : AuthenticationErrors
@@ -20,11 +17,11 @@ data class TokenInvalid(override val message: String) : AuthenticationErrors
 data class UserNotFound(override val message: String = "User not found") : Error, SelfQueryResult, UpdateSelfResult,
   ProfileResult, ProfileMutationResult
 
-sealed interface AuthorizationErrors : Error, ArticleErrors, UpdateArticleResult, DeleteArticleResult
+sealed interface AuthorizationErrors : Error, ArticleErrors, ArticleMutationResult, DeleteArticleResult
 data class Forbidden(override val message: String) : AuthorizationErrors
 
 data class ServerError(override val message: String = "Something went wrong") : Error, ArticleErrors, ArticleListResult,
-  ArticleFeedResult, CreateArticleResult, UpdateArticleResult, DeleteArticleResult
+  ArticleFeedResult, CreateArticleResult, ArticleMutationResult, DeleteArticleResult
 
 sealed interface LoginErrors : Error, LoginResult {
   data class EmailUnknown(override val message: String) : LoginErrors
@@ -34,14 +31,13 @@ sealed interface LoginErrors : Error, LoginResult {
 sealed interface RegistrationErrors : Error, RegisterResult
 data class UserAlreadyExist(override val message: String) : RegistrationErrors
 
-sealed interface ArticleErrors : Error {
-  data class ArticleNotFound(override val message: String) : ArticleErrors, ArticleResult, UpdateArticleResult,
-    DeleteArticleResult
+sealed interface ArticleErrors : Error
+data class ArticleNotFound(override val message: String) : ArticleErrors, ArticleResult, ArticleMutationResult,
+  DeleteArticleResult
 
-  data class CommentNotFound(override val message: String) : ArticleErrors
-}
+data class CommentNotFound(override val message: String) : Error, ArticleErrors
 
 sealed class InvalidPropertyError : Error {
   data class SlugInvalid(override val message: String = "Invalid slug") : InvalidPropertyError(), ArticleResult,
-    UpdateArticleResult, DeleteArticleResult
+    ArticleMutationResult, DeleteArticleResult
 }

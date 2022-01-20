@@ -15,7 +15,7 @@ fun StatusPages.Configuration.configure() {
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: LoginErrors) = when (error) {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: LoginErrors) = when (error) {
   is LoginErrors.EmailUnknown -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(status = HttpStatusCode.Unauthorized, message = errorBody)
@@ -26,20 +26,20 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: LoginErro
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: UserNotFound) {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: UserNotFound) {
   val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
   call.respond(HttpStatusCode.NotFound, errorBody)
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: RegistrationErrors) = when (error) {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: RegistrationErrors) = when (error) {
   is UserAlreadyExist -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ArticleErrors) = when (error) {
-  is ArticleErrors.ArticleNotFound -> {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: ArticleErrors) = when (error) {
+  is ArticleNotFound -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.NotFound, errorBody)
   }
@@ -48,24 +48,24 @@ suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ArticleEr
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.InternalServerError, errorBody)
   }
-  is ArticleErrors.CommentNotFound -> {
+  is CommentNotFound -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.NotFound, errorBody)
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: InvalidPropertyError) = when (error) {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: InvalidPropertyError) = when (error) {
   is InvalidPropertyError.SlugInvalid -> {
     val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
     call.respond(HttpStatusCode.UnprocessableEntity, errorBody)
   }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: ServerError) {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: ServerError) {
   val errorBody = ErrorEnvelope(mapOf("body" to listOf(error.message)))
   call.respond(HttpStatusCode.InternalServerError, errorBody)
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handleErrors(error: AuthorizationErrors) = when (error) {
+suspend fun PipelineContext<*, ApplicationCall>.handleErrors(error: AuthorizationErrors) = when (error) {
   is Forbidden -> call.respond(HttpStatusCode.Unauthorized)
 }

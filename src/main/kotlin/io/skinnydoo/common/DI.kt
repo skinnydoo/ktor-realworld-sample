@@ -8,6 +8,7 @@ import com.expediagroup.graphql.generator.TopLevelObject
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.GraphQL
+import graphql.execution.instrumentation.tracing.TracingInstrumentation
 import graphql.schema.GraphQLSchema
 import io.skinnydoo.articles.*
 import io.skinnydoo.articles.comments.*
@@ -136,14 +137,16 @@ private val graphQLModule = module {
         addArticleUseCase = get(named("addArticle")),
         updateArticleUseCase = get(named("updateArticle")),
         deleteArticleUseCase = get(named("deleteArticle")),
-        get()
+        favoriteArticle = get(named("favorArticle")),
+        unFavoriteArticle = get(named("unFavorArticle")),
+        authService = get(),
       ))
     )
     SchemaGenerator(config).use { it.generateSchema(queries, mutations) }
   }
   single { KtorGraphQLAuthService(get(), get(named("getUserWithId"))) }
 
-  factory { GraphQL.newGraphQL(get()).build() }
+  factory { GraphQL.newGraphQL(get()).instrumentation(TracingInstrumentation()).build() }
   factory { GraphQLRequestHandler(get(), null) }
   factory { KtorGraphQLServer(get(), get(), get()) }
 }

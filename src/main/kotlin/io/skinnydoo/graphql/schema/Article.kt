@@ -89,6 +89,8 @@ class ArticleMutationService(
   private val addArticleUseCase: AddArticleUseCase,
   private val updateArticleUseCase: UpdateArticleUseCase,
   private val deleteArticleUseCase: DeleteArticleUseCase,
+  private val favoriteArticle: FavorArticleUseCase,
+  private val unFavoriteArticle: UnFavorArticleUseCase,
   private val authService: KtorGraphQLAuthService,
 ) : Mutation {
 
@@ -110,34 +112,42 @@ class ArticleMutationService(
     slug: String,
     details: UpdateArticleDetails,
     dfe: DataFetchingEnvironment,
-  ): UpdateArticleResult = authService(dfe.graphQlContext["auth"])
+  ): ArticleMutationResult = authService(dfe.graphQlContext["auth"])
     .zip(Slug.fromString(slug).toEither { InvalidSlug("Invalid SLUG string: $slug") })
     .flatMap { (user, slug) ->
-      updateArticleUseCase(slug, details, user.id).mapLeft {
-        when (it) {
-          is ArticleErrors.ArticleNotFound -> it
-          is Forbidden -> it
-          is ServerError -> it
-          is ArticleErrors.CommentNotFound -> ServerError("Something went wrong")
-        }
-      }
-    }.merge()
+      updateArticleUseCase(slug, details, user.id).mapLeft { handleErrors(it) as ArticleMutationResult }
+    }
+    .merge()
+
+  suspend fun favouriteArticle(
+    slug: String,
+    dfe: DataFetchingEnvironment,
+  ): ArticleMutationResult = authService(dfe.graphQlContext["auth"])
+    .zip(Slug.fromString(slug).toEither { InvalidSlug("Invalid SLUG string: $slug") })
+    .flatMap { (user, slug) -> favoriteArticle(slug, user.id).mapLeft { handleErrors(it) as ArticleMutationResult } }
+    .merge()
+
+  suspend fun unFavouriteArticle(
+    slug: String,
+    dfe: DataFetchingEnvironment,
+  ): ArticleMutationResult = authService(dfe.graphQlContext["auth"])
+    .zip(Slug.fromString(slug).toEither { InvalidSlug("Invalid SLUG string: $slug") })
+    .flatMap { (user, slug) -> unFavoriteArticle(slug, user.id).mapLeft { handleErrors(it) as ArticleMutationResult } }
+    .merge()
 
   suspend fun deleteArticle(
     slug: String,
     dfe: DataFetchingEnvironment,
   ): DeleteArticleResult = authService(dfe.graphQlContext["auth"])
     .zip(Slug.fromString(slug).toEither { InvalidSlug("Invalid SLUG string: $slug") })
-    .flatMap { (user, slug) ->
-      deleteArticleUseCase(slug, user.id).mapLeft {
-        when (it) {
-          is ArticleErrors.ArticleNotFound -> it
-          is Forbidden -> it
-          is ServerError -> it
-          is ArticleErrors.CommentNotFound -> ServerError("Something went wrong")
-        }
-      }
-    }
+    .flatMap { (user, slug) -> deleteArticleUseCase(slug, user.id).mapLeft { handleErrors(it) as DeleteArticleResult } }
     .map { Deleted(true) }
     .merge()
+
+  private fun handleErrors(error: ArticleErrors) = when (error) {
+    is ArticleNotFound -> error
+    is Forbidden -> error
+    is ServerError -> error
+    is CommentNotFound -> ServerError("Something went wrong")
+  }
 }
