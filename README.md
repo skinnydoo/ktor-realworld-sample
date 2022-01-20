@@ -9,6 +9,8 @@ This codebase was created to familiarize myself with Ktor, as well as the [graph
 
 For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
+Also, for the GraphQL implementation switch to the [graphql](../../tree/graphql) branch.
+
 # Overview
 
 ## What tools & frameworks are we using?
